@@ -1,0 +1,62 @@
+:name: fraud-detection
+:long_name: Fraud Detection
+:description: Fraud detection with the Paysim financial dataset, Neo4j Graph Data Science, and Neo4j Bloom
+:icon: 
+:logo: documentation/img/fraud-logo.png
+:tags: example-data,dataset,paysim-data,fraud-detection,finance,gds,bloom
+:author: David Voutila
+:use-load-script: 
+:use-dump-file: data/fraud-detection-40.dump
+:use-plugin: gds
+:target-db-version: 3.5,4.0
+:bloom-perspective: bloom/fraud-detection.bloom-perspective
+:guide: documentation/fraud-detection.neo4j-browser-guide
+:rendered-guide: https://guides.neo4j.com/sandbox/fraud-detection/index.html
+:model: documentation/img/model.svg
+
+:query: MATCH (m:Merchant{name:$name})<-[:TO]-(:Transaction)<-[:PERFORMED]-(c:Client) +
+RETURN c.name as client +
+
+:param-name: name
+:param-value: MYrsa
+:result-column: client
+:expected-result: Aaliyah Hale
+
+:model-guide:
+:todo: 
+image::{logo}[]
+
+= {long_name} Graph Example
+
+Description: _{description}_
+
+.Model
+image::{model}[]
+
+.Example
+image::{example}[width=600]
+
+.Example Query:
+[source,cypher,subs=attributes]
+----
+{query}
+----
+
+=== Setup
+
+This is for Neo4j version: `{target-db-version}`
+
+Rendered guide available from: `:play fraud-detection` 
+// or `:play {rendered-guide}``
+
+Unrendered guide: link:{guide}[]
+
+Data files: `{data}`
+
+=== Code Examples
+
+* link:code/javascript/example.js[JavaScript]
+* link:code/java/Example.java[Java]
+* link:code/csharp/Example.cs[C#]
+* link:code/python/example.py[Python]
+* link:code/go/example.go[Go]
