@@ -13,6 +13,7 @@
 :guide: documentation/fraud-detection.neo4j-browser-guide
 :rendered-guide: https://guides.neo4j.com/sandbox/fraud-detection/index.html
 :model: documentation/img/model.svg
+:example: documentation/img/example.png
 
 :query: MATCH (m:Merchant{name:$name})<-[:TO]-(:Transaction)<-[:PERFORMED]-(c:Client) +
 RETURN c.name as client +
@@ -24,7 +25,7 @@ RETURN c.name as client +
 
 :model-guide:
 :todo: 
-image::{logo}[]
+image::{logo}[width=100]
 
 = {long_name} Graph Example
 
