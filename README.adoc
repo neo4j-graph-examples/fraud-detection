@@ -6,6 +6,7 @@
 :tags: example-data,dataset,paysim-data,fraud-detection,finance,gds,bloom
 :author: David Voutila
 :use-load-script: 
+:data:
 :use-dump-file: data/fraud-detection-40.dump
 :use-plugin: gds
 :target-db-version: 3.5,4.0
@@ -52,7 +53,7 @@ Rendered guide available from: `:play fraud-detection`
 
 Unrendered guide: link:{guide}[]
 
-Data files: `{data}`
+Data files: `{use-dump-file}`
 
 === Code Examples
 

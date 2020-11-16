@@ -1,0 +1,14 @@
+{
+    "name": "fraud-detection",
+    "description":"Fraud detection with the Paysim financial dataset, Neo4j Graph Data Science, and Neo4j Bloom",
+    "install": [
+      {
+          "dumpFile": "data/fraud-detection-35.dump",
+          "targetNeo4jVersion":"3.5"
+      },
+      {
+          "dumpFile": "data/fraud-detection-40.dump",
+          "targetNeo4jVersion": "^4.0"
+      }
+  ]
+}
