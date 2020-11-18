@@ -26,7 +26,7 @@ RETURN c.name as client +
 
 :model-guide:
 :todo: 
-image::{logo}[width=200]
+image::{logo}[width=100]
 
 = {long_name} Graph Example
 
