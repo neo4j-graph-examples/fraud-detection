@@ -1,5 +1,5 @@
 :name: fraud-detection
-:long_name: Fraud Detection
+:long-name: Fraud Detection
 :description: Fraud detection with the Paysim financial dataset, Neo4j Graph Data Science, and Neo4j Bloom
 :icon: 
 :logo: documentation/img/fraud-logo.png
@@ -28,7 +28,7 @@ RETURN c.name as client +
 :todo: 
 image::{logo}[width=100]
 
-= {long_name} Graph Example
+== {long-name} Graph Example
 
 Description: _{description}_
 
