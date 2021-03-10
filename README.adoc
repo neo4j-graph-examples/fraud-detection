@@ -17,14 +17,6 @@
 :model: documentation/img/model.svg
 :example: documentation/img/example.png
 
-:query: MATCH (m:Merchant{name:$name})<-[:TO]-(:Transaction)<-[:PERFORMED]-(c:Client) +
-RETURN c.name as client +
-
-:param-name: name
-:param-value: MYrsa
-:result-column: client
-:expected-result: Aaliyah Hale
-
 :todo: false
 image::{icon}[width=100]
 
@@ -43,9 +35,10 @@ image::{model}[]
 image::{example}[width=600]
 
 .Example Query:
-[source,cypher,subs=attributes]
+[source,cypher,role=query-example,param-name=name,param-value=MYrsa,result-column=client,expected-result="Aaliyah Hale"]
 ----
-{query}
+MATCH (m:Merchant{name:$name})<-[:TO]-(:Transaction)<-[:PERFORMED]-(c:Client)
+RETURN c.name as client
 ----
 
 === Setup
