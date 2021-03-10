@@ -8,7 +8,7 @@ driver = GraphDatabase.driver(
   auth=basic_auth("<USERNAME>", "<PASSWORD>"))
 
 cypher_query = '''
-MATCH (m:Merchant{name:$name})<-[:TO]-(:Transaction)<-[:PERFORMED]-(c:Client) 
+MATCH (m:Merchant{name:$name})<-[:TO]-(:Transaction)<-[:PERFORMED]-(c:Client)
 RETURN c.name as client
 '''
 
