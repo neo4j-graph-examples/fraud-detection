@@ -1,548 +1,1435 @@
-= Fraud Detection Using Neo4j Platform and PaySim Dataset
-:presenter: Neo Technology
-:twitter: neo4j
-:email: info@neotechnology.com
-:neo4j-version: 3.5.17
-:currentyear: 2020
-:doctype: book
-:toc: left
-:toclevels: 3
-:currsect: 0
-:imagedir: http://localhost:8001/img
-:sourcedir: scripts
+<style type="text/css" media="screen">
+/*
+.nodes-image {
+	margin:-100;
+}
+*/	
+@import url("//maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css");
+
+.imageblock .content img, .image img {max-width: 900px;max-height: 300px;}
+.deck h3, .deck h4 {display: block !important;margin-bottom:8px;margin-top:5px;}
+.listingblock {margin:8px;}
+.pull-bottom {position:relative;bottom:1em;}
+.admonitionblock td.icon [class^="fa icon-"]{font-size:2.5em;text-shadow:1px 1px 2px rgba(0,0,0,.5);cursor:default}
+.admonitionblock td.icon .icon-note:before{content:"\f05a";color:#19407c}
+.admonitionblock td.icon .icon-tip:before{content:"\f0eb";text-shadow:1px 1px 2px rgba(155,155,0,.8);color:#111}
+.admonitionblock td.icon .icon-warning:before{content:"\f071";color:#bf6900}
+.admonitionblock td.icon .icon-caution:before{content:"\f06d";color:#bf3400}
+.admonitionblock td.icon .icon-important:before{content:"\f06a";color:#bf0000}
+.admonitionblock.note.speaker { display:none; }
+</style>
+<style type="text/css" media="screen">
+/* #editor.maximize-editor .CodeMirror-code { font-size:24px; line-height:26px; } */
+</style>
+<article class="guide" ng-controller="AdLibDataController">
+  <carousel class="deck container-fluid">
+    <!--slide class="row-fluid">
+      <div class="col-sm-3">
+        <h3>Fraud Detection Using Neo4j Platform and PaySim Dataset</h3>
+        <p class="lead">Information</p>
+			<!dl>
+				
+				
+				
+				
+				
+			</dl>
+		</div>
+      <div class="col-sm-9">
+        <figure>
+          <img style="width:300px" src=""/>
+        </figure>
+      </div>
+    </slide-->
+    
 
 
-== Fraud Detection and Investigation Using Graph Data Science Library
+   <h4>Fraud Detection Using Neo4j Platform and PaySim Dataset</h4>
+   
 
-Example GDS workflow to demonstrate application of Graph Data Science in the financial domain.
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Fraud Detection and Investigation Using Graph Data Science Library</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>Example GDS workflow to demonstrate application of Graph Data Science in the financial domain.
 This browser guide contains snippets of cypher code and a brief explanation in each slide to help with the
-hands-on exercises.
-
-We will use the GDS Library to get you started with few scenarios in  first party and synthetic identity fraud detection
-and investigation.
-
-There are four modules in this playguide
-
-. Problem Definition
-. Preliminary Data Analysis
-. First-party Fraud
-. Second-party Fraud
-
-== Module 1: Problem Definition
-
-=== *What is Fraud?*
-
-*Fraud occurs* when an individual or group of individuals, or a business entity *intentionally*
-deceives another individual or business entity with *misrepresentation* of identity, products,
-services, or financial transactions and/or *false promises* with no intention of fulfilling them.
-
-{nbsp} + 
-
-=== *Fraud Categories*
-
-* *First-party Fraud*
-** An individual, or group of individuals, misrepresent their identity or give false information when applying for a product or services to receive more favourable rates or when have no intention of repayment.
-
-* *Second-party Fraud*
-** An individual knowingly gives their identity or personal information to another individual to commit fraud or someone is perpetrating fraud in his behalf.
-
-* *Third-party Fraud*
-** An individual, or group of individuals, create or use another person's identity, or personal details, to open or takeover an account.
+hands-on exercises.</p>
+</div>
+<div class="paragraph">
+<p>We will use the GDS Library to get you started with few scenarios in  first party and synthetic identity fraud detection
+and investigation.</p>
+</div>
+<div class="paragraph">
+<p>There are four modules in this playguide</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Problem Definition</p>
+</li>
+<li>
+<p>Preliminary Data Analysis</p>
+</li>
+<li>
+<p>First-party Fraud</p>
+</li>
+<li>
+<p>Second-party Fraud</p>
+</li>
+</ol>
+</div>
+	</div>
+  </div>
+</slide>
 
 
-== Module 2: Preliminary Data Analysis
 
-We will use Paysim dataset for the hands-on exercises. Paysim is a synthetic dataset that mimics
-real world mobile money transfer network.
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Module 1: Problem Definition</h3>
+    <br/>
+    <div>
+      
 
-Let's explore the dataset.
 
-. Database Schema
-. Stats
-. Node Labels
-. Relationship Types
-. Nodes & Relationship Properties
-. Transaction Types
+   <h4><strong>What is Fraud?</strong></h4>
+   <div class="paragraph">
+<p><strong>Fraud occurs</strong> when an individual or group of individuals, or a business entity <strong>intentionally</strong>
+deceives another individual or business entity with <strong>misrepresentation</strong> of identity, products,
+services, or financial transactions and/or <strong>false promises</strong> with no intention of fulfilling them.</p>
+</div>
+<div class="paragraph">
+<p>&#160;<br></p>
+</div>
 
-For more information on the dataset, please visit  https://www.sisu.io/posts/paysim/[Dave Voutila's Blog^]
 
-== Exercise 1: Database Schema
 
-[source,cypher]
-----
-CALL db.schema.visualization();
-----
+   <h4><strong>Fraud Categories</strong></h4>
+   <div class="ulist">
+<ul>
+<li>
+<p><strong>First-party Fraud</strong></p>
+<div class="ulist">
+<ul>
+<li>
+<p>An individual, or group of individuals, misrepresent their identity or give false information when applying for a product or services to receive more favourable rates or when have no intention of repayment.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Second-party Fraud</strong></p>
+<div class="ulist">
+<ul>
+<li>
+<p>An individual knowingly gives their identity or personal information to another individual to commit fraud or someone is perpetrating fraud in his behalf.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Third-party Fraud</strong></p>
+<div class="ulist">
+<ul>
+<li>
+<p>An individual, or group of individuals, create or use another person&#8217;s identity, or personal details, to open or takeover an account.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+	</div>
+  </div>
+</slide>
 
-== Exercise 2: Stats
-Counts of nodes, node labels, relationships, relationship types, property keys and statistics using our APOC library.
 
-[source,cypher]
-----
-CALL apoc.meta.stats();
-----
 
-== Exercise 3: Node Labels
-List all the node labels and corresponding frequencies. This is done by iterating over all the node labels in the
-database and calculating frequencies and relative frequencies.
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Module 2: Preliminary Data Analysis</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>We will use Paysim dataset for the hands-on exercises. Paysim is a synthetic dataset that mimics
+real world mobile money transfer network.</p>
+</div>
+<div class="paragraph">
+<p>Let&#8217;s explore the dataset.</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Database Schema</p>
+</li>
+<li>
+<p>Stats</p>
+</li>
+<li>
+<p>Node Labels</p>
+</li>
+<li>
+<p>Relationship Types</p>
+</li>
+<li>
+<p>Nodes &amp; Relationship Properties</p>
+</li>
+<li>
+<p>Transaction Types</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>For more information on the dataset, please visit  <a href="https://www.sisu.io/posts/paysim/" target="_blank">Dave Voutila&#8217;s Blog</a></p>
+</div>
+	</div>
+  </div>
+</slide>
 
-[source,cypher]
-----
-include::{sourcedir}/nodeFrequency.cypher[]
-----
 
-== Exercise 4: Relationship Types
-List all the relationship types and corresponding frequencies. This is done by iterating over all the relationship types
-in the database and calculating frequencies and relative frequencies.
 
-[source,cypher]
-----
-include::{sourcedir}/relationshipFrequency.cypher[]
-----
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Exercise 1: Database Schema</h3>
+    <br/>
+    <div>
+      <div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->CALL db.schema.visualization();<!--/code--></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
 
-== Exercise 5: Nodes & Relationship Properties
-List all nodes and relationship properties.
 
-[source,cypher]
-----
-include::{sourcedir}/nodeRelationshipProperties.cypher[]
-----
 
-== Exercise 6: Transaction Types
-There are five types of transactions in this database. List all transaction types and corresponding metrics like
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Exercise 2: Stats</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>Counts of nodes, node labels, relationships, relationship types, property keys and statistics using our APOC library.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->CALL apoc.meta.stats();<!--/code--></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Exercise 3: Node Labels</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>List all the node labels and corresponding frequencies. This is done by iterating over all the node labels in the
+database and calculating frequencies and relative frequencies.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->CALL db.labels() YIELD label
+CALL apoc.cypher.run('MATCH (:`'+label+'`) RETURN count(*) as freq',{})
+YIELD value
+WITH label,value.freq AS freq
+CALL apoc.meta.stats() YIELD nodeCount
+WITH *,3 AS presicion
+WITH *,10^presicion AS factor,toFloat(freq)/toFloat(nodeCount) AS relFreq
+RETURN label AS nodeLabel, freq AS frequency,round(relFreq*factor)/factor AS relativeFrequency ORDER BY freq DESC;<!--/code--></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Exercise 4: Relationship Types</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>List all the relationship types and corresponding frequencies. This is done by iterating over all the relationship types
+in the database and calculating frequencies and relative frequencies.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->CALL db.relationshipTypes() YIELD relationshipType as type
+CALL apoc.cypher.run('MATCH ()-[:`'+type+'`]-&gt;() RETURN count(*) as freq',{})
+YIELD value
+WITH type AS relationshipType, value.freq AS freq
+CALL apoc.meta.stats() YIELD relCount
+WITH *,3 AS presicion
+WITH *, 10^presicion AS factor,toFloat(freq)/toFloat(relCount) as relFreq
+RETURN relationshipType, freq AS frequency,
+    round(relFreq*factor)/factor AS relativeFrequency
+ORDER BY freq DESC;<!--/code--></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Exercise 5: Nodes &amp; Relationship Properties</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>List all nodes and relationship properties.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->CALL apoc.meta.data() YIELD label,property,type,elementType
+WHERE type&lt;&gt;'RELATIONSHIP'
+RETURN elementType,label,property,type
+ORDER BY elementType,label,property;<!--/code--></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Exercise 6: Transaction Types</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>There are five types of transactions in this database. List all transaction types and corresponding metrics like
 total market value, relative market values, number of transactions etc. by iterating over all the transactions
-of all transaction types.
+of all transaction types.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH (t:Transaction)
+WITH sum(t.amount) AS globalSum, count(t) AS globalCnt
+WITH *, 10^3 AS scaleFactor
+UNWIND ['CashIn', 'CashOut', 'Payment', 'Debit', 'Transfer'] AS txType
+  CALL apoc.cypher.run('MATCH (t:' + txType + ')
+    RETURN sum(t.amount) as txAmount, count(t) AS txCnt', {})
+  YIELD value
+RETURN txType,value.txAmount AS TotalMarketValue,
+  100*round(scaleFactor*(toFloat(value.txAmount)/toFloat(globalSum)))
+    /scaleFactor AS `%MarketValue`,
+  100*round(scaleFactor*(toFloat(value.txCnt)/toFloat(globalCnt)))
+    /scaleFactor AS `%MarketTransactions`,
+  toInteger(toFloat(value.txAmount)/toFloat(value.txCnt)) AS AvgTransactionValue,
+  value.txCnt AS NumberOfTransactions
+ORDER BY `%MarketTransactions` DESC;<!--/code--></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
 
-[source,cypher]
-----
-include::{sourcedir}/transactionFrequency.cypher[]
-----
 
-== End of Module 2
 
-In this module we explored the PaySim dataset and collected some statistics:
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>End of Module 2</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>In this module we explored the PaySim dataset and collected some statistics:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Database schema and size</p>
+</li>
+<li>
+<p>Node labels and relationship types distributions</p>
+</li>
+<li>
+<p>Node and relationship properties</p>
+</li>
+<li>
+<p>Transaction type distribution</p>
+</li>
+</ol>
+</div>
+	</div>
+  </div>
+</slide>
 
-. Database schema and size
-. Node labels and relationship types distributions
-. Node and relationship properties
-. Transaction type distribution
 
-== Module 3: First-party Fraud
 
-This module contains the following exercises:
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Module 3: First-party Fraud</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>This module contains the following exercises:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Identifying clients sharing sharing personally identifiable information (PII)</p>
+</li>
+<li>
+<p>Identifying clusters of clients sharing PII using community detection algorithms (Weakly Connected Components)</p>
+</li>
+<li>
+<p>Finding similar clients within the clusters based on shared identifiers using pairwise similarity algorithms
+(Node Similarity)</p>
+</li>
+<li>
+<p>Calculating and assigning fraud score to clients in clusters using centrality algorithms (Degree Centrality)</p>
+</li>
+<li>
+<p>Using assigned fraud scores to label clients as potential fraudsters</p>
+</li>
+</ol>
+</div>
+	</div>
+  </div>
+</slide>
 
-. Identifying clients sharing sharing personally identifiable information (PII)
-. Identifying clusters of clients sharing PII using community detection algorithms (Weakly Connected Components)
-. Finding similar clients within the clusters based on shared identifiers using pairwise similarity algorithms
-(Node Similarity)
-. Calculating and assigning fraud score to clients in clusters using centrality algorithms (Degree Centrality)
-. Using assigned fraud scores to label clients as potential fraudsters
 
-== Exercise 1, Task 1: Identify clients sharing PII
 
-Identify pairs of clients sharing PII
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Exercise 1, Task 1: Identify clients sharing PII</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>Identify pairs of clients sharing PII</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH (c1:Client)-[:HAS_EMAIL|HAS_PHONE|HAS_SSN]-&gt;(info)
+&lt;-[:HAS_EMAIL|HAS_PHONE|HAS_SSN]-(c2:Client)
+WHERE c1.id&lt;&gt;c2.id
+RETURN c1.id,c2.id,count(*) AS freq ORDER BY freq DESC;<!--/code--></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Number of unique clients sharing PII</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH (c1:Client)-[:HAS_EMAIL|HAS_PHONE|HAS_SSN]-&gt;(info)
+&lt;-[:HAS_EMAIL|HAS_PHONE|HAS_SSN]-(c2:Client)
+WHERE c1.id&lt;&gt;c2.id
+RETURN count(DISTINCT c1.id) AS freq;<!--/code--></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
 
-[source,cypher]
-----
-include::{sourcedir}/sharingPIIQuery.cypher[]
-----
 
-Number of unique clients sharing PII
 
-[source,cypher]
-----
-include::{sourcedir}/sharingPIIUniqueQuery.cypher[]
-----
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Exercise 1, Task 2: Create a new relationship</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>Create a new relationship to connect clients that share identifiers and add the number of
+shared identifiers as a property on that relationship</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH (c1:Client)-[:HAS_EMAIL|HAS_PHONE|HAS_SSN]-&gt;(info)
+&lt;-[:HAS_EMAIL|HAS_PHONE|HAS_SSN]-(c2:Client)
+WHERE c1.id&lt;&gt;c2.id
+WITH c1, c2, count(*) as cnt
+MERGE (c1) - [:SHARED_IDENTIFIERS {count: cnt}] - (c2);<!--/code--></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Visualize the new relationship created above.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH p = (c:Client) - [s:SHARED_IDENTIFIERS] - () WHERE s.count &gt;= 2 RETURN p limit 25;<!--/code--></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
 
-== Exercise 1, Task 2: Create a new relationship
 
-Create a new relationship to connect clients that share identifiers and add the number of
-shared identifiers as a property on that relationship
 
-[source, cypher]
-----
-include::{sourcedir}/sharedIdentifiers.cypher[]
-----
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>End of Exercise 1</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>In this exercise we accomplished the following tasks:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Identified all pairs of clients sharing PII and calculated the number of such clients</p>
+</li>
+<li>
+<p>Created a new relationship to connect pairs of clients sharing PII</p>
+</li>
+</ol>
+</div>
+	</div>
+  </div>
+</slide>
 
-Visualize the new relationship created above.
 
-[source,cypher]
-----
-include::{sourcedir}/visualizeSharedIdentifiers.cypher[]
-----
 
-== End of Exercise 1
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Exercise 2: Identify Clusters of Clients Sharing PII</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>Identifying clusters of clients sharing PII is accomplished by running one of the community detection algorithms
+implemented in our GDS library.</p>
+</div>
+<div class="paragraph">
+<p>We use Weakly Connected Components to find groups of connected nodes, where all nodes
+in the same set form a connected component. WCC is often used early in an analysis to understand the structure of a graph.</p>
+</div>
+<div class="paragraph">
+<p>More informaton here: <a href="https://neo4j.com/docs/graph-data-science/current/algorithms/wcc/" target="_blank">WCC documentation</a></p>
+</div>
+<div class="paragraph">
+<p>In this exercise, you will also learn how to reshape your graph for WCC, use graph catalog functions to load your graphs
+into memory and execute graph algorithms</p>
+</div>
+	</div>
+  </div>
+</slide>
 
-In this exercise we accomplished the following tasks:
 
-. Identified all pairs of clients sharing PII and calculated the number of such clients
-. Created a new relationship to connect pairs of clients sharing PII
 
-== Exercise 2: Identify Clusters of Clients Sharing PII
-Identifying clusters of clients sharing PII is accomplished by running one of the community detection algorithms
-implemented in our GDS library.
-
-We use Weakly Connected Components to find groups of connected nodes, where all nodes
-in the same set form a connected component. WCC is often used early in an analysis to understand the structure of a graph.
-
-More informaton here: https://neo4j.com/docs/graph-data-science/current/algorithms/wcc/[WCC documentation^]
-
-In this exercise, you will also learn how to reshape your graph for WCC, use graph catalog functions to load your graphs
-into memory and execute graph algorithms
-
-== Exercise 2, Task 0: Reshaping and loading graphs
-
-The first step is think about the shape of our input graph before executing any algorithm. After that, make sure to reshape the
-graph to satisfy the requirements for an algorithm so that we get meaningful results in the end.
-
-In this exercise, we are planning to use a community detection algorithm to find communities/clusters of clients.
-
-Community detection algorithms expect
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Exercise 2, Task 0: Reshaping and loading graphs</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>The first step is think about the shape of our input graph before executing any algorithm. After that, make sure to reshape the
+graph to satisfy the requirements for an algorithm so that we get meaningful results in the end.</p>
+</div>
+<div class="paragraph">
+<p>In this exercise, we are planning to use a community detection algorithm to find communities/clusters of clients.</p>
+</div>
+<div class="paragraph">
+<p>Community detection algorithms expect
 monopartite graphs (nodes of a single type and relationships between nodes) as inputs. Hence, we have to project a graph into
-memory that contains only client nodes and relationships that connect those nodes.
-
-More information on graph projections and graph catalog: https://neo4j.com/docs/graph-data-science/current/management-ops/graph-catalog-ops/#graph-catalog-ops[Graph Catalog^]
-
-== Exercise 2, Task 1: Memory Estimation
-It is a good practice to run memory estimates before creating your graph to make sure you have enough memory to
-create an in-memory graph.
-
-[source,cypher]
-----
-include::{sourcedir}/memoryEstimation.cypher[]
-----
-More about memory estimation for graphs: https://neo4j.com/docs/graph-data-science/current/common-usage/memory-estimation/#estimate-procedure-graph[Memory Estimation for Graphs^]
-
-Another best practice is to list the graphs that are already loaded into memory. This is a good time to
-remove any unused graphs from the graph catalog.
-
-[source,cypher]
-----
-CALL gds.graph.list();
-----
-
-To remove a named graph from the graph catalog,
-
-[source,cypher]
-----
-CALL gds.graph.drop('name-of-your-graph');
-----
-
-== Exercise 2, Task 2: Graph projection for WCC
-Let's load our monopartite graph into memory using native projection.
-We chose 'WCC' as our graph name in this tutorial for running WCC algorithm.
+memory that contains only client nodes and relationships that connect those nodes.</p>
+</div>
+<div class="paragraph">
+<p>More information on graph projections and graph catalog: <a href="https://neo4j.com/docs/graph-data-science/current/management-ops/graph-catalog-ops/#graph-catalog-ops" target="_blank">Graph Catalog</a></p>
+</div>
+	</div>
+  </div>
+</slide>
 
 
-[source,cypher]
-----
-include::{sourcedir}/loadWCCNamedGraph.cypher[]
-----
 
-Native Projection Syntax: https://neo4j.com/docs/graph-data-science/current/management-ops/native-projection/#native-projection[Native Projection^]
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Exercise 2, Task 1: Memory Estimation</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>It is a good practice to run memory estimates before creating your graph to make sure you have enough memory to
+create an in-memory graph.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->CALL gds.graph.create.cypher.estimate(
+'MATCH (c:Client) RETURN id(c) AS id',
+'MATCH (c1:Client)-[r:SHARED_IDENTIFIERS]-(c2:Client)
+WHERE c1.id&lt;&gt;c2.id
+RETURN id(c1) AS source,id(c2) AS target,r.count AS weight')
+YIELD requiredMemory,nodeCount,relationshipCount;<!--/code--></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>More about memory estimation for graphs: <a href="https://neo4j.com/docs/graph-data-science/current/common-usage/memory-estimation/#estimate-procedure-graph" target="_blank">Memory Estimation for Graphs</a></p>
+</div>
+<div class="paragraph">
+<p>Another best practice is to list the graphs that are already loaded into memory. This is a good time to
+remove any unused graphs from the graph catalog.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->CALL gds.graph.list();<!--/code--></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>To remove a named graph from the graph catalog,</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->CALL gds.graph.drop('name-of-your-graph');<!--/code--></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
 
-== Exercise 2, Task 3: Pre-execution checks
-Estimate memory before running your algorithm.
 
-[source,cypher]
-----
-CALL gds.wcc.stream.estimate('WCC');
-----
 
-Collecting stats is a good practice to see if the results make sense. For example, if there are no relationships
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Exercise 2, Task 2: Graph projection for WCC</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>Let&#8217;s load our monopartite graph into memory using native projection.
+We chose 'WCC' as our graph name in this tutorial for running WCC algorithm.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->CALL gds.graph.create('WCC', 'Client',
+	{
+    	SHARED_IDENTIFIERS:{
+        	type: 'SHARED_IDENTIFIERS',
+        	properties: {
+            	count: {
+                	property: 'count'
+                }
+            }
+        }
+	}
+) YIELD graphName,nodeCount,relationshipCount,createMillis;<!--/code--></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Native Projection Syntax: <a href="https://neo4j.com/docs/graph-data-science/current/management-ops/native-projection/#native-projection" target="_blank">Native Projection</a></p>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Exercise 2, Task 3: Pre-execution checks</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>Estimate memory before running your algorithm.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->CALL gds.wcc.stream.estimate('WCC');<!--/code--></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Collecting stats is a good practice to see if the results make sense. For example, if there are no relationships
 in your graph, number of clusters is equal to number of nodes. If every node is connected to other nodes then you will have one
-big giant cluster and it is not meaningful to run WCC.
-
-[source,cypher]
-----
-CALL gds.wcc.stats('WCC');
-----
-
-More about memory estimation for algorithms: https://neo4j.com/docs/graph-data-science/current/common-usage/memory-estimation/#estimate-procedure-algo[Memory estimation for Algorithms^]
-
-== Exercise 2, Task 4: Execute WCC algorithm
-* Stream mode
-** Execute WCC and stream results back to the browser
-** Results are not written to the database
-
-[source,cypher]
-----
-include::{sourcedir}/wccStream.cypher[]
-----
-
-Modes of execution: https://neo4j.com/docs/graph-data-science/current/common-usage/running-algos/#running-algos[Running Algorithms^]
-
-== Exercise 2, Task 5: Write results to the database.
-* Writing results
-**  Write mode lets us write back the results to the database.
-** Instead of write mode, here we are going to use cypher to filter clusters based on the size (>1)
-and then set a property on Client nodes
-
-[source,cypher]
-----
-include::{sourcedir}/wccWrite.cypher[]
-----
-
-== Exercise 2, Task 6: Collect and visualize clusters
-Visualize clusters of clients sharing information.
-
-[source,cypher]
-----
-include::{sourcedir}/wccDisplay.cypher[]
-----
+big giant cluster and it is not meaningful to run WCC.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->CALL gds.wcc.stats('WCC');<!--/code--></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>More about memory estimation for algorithms: <a href="https://neo4j.com/docs/graph-data-science/current/common-usage/memory-estimation/#estimate-procedure-algo" target="_blank">Memory estimation for Algorithms</a></p>
+</div>
+	</div>
+  </div>
+</slide>
 
 
-== Exercise 3: Finding similar clients within clusters
-Finding similar clients with a cluster is accomplished by running one of the paiwrise similarity algorithms
-implemented in our GDS library.
 
-We use node similarity to find similar nodes based on the relationships to other nodes. Node similarity uses
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Exercise 2, Task 4: Execute WCC algorithm</h3>
+    <br/>
+    <div>
+      <div class="ulist">
+<ul>
+<li>
+<p>Stream mode</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Execute WCC and stream results back to the browser</p>
+</li>
+<li>
+<p>Results are not written to the database</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->CALL gds.wcc.stream('WCC')
+YIELD componentId,nodeId
+WITH componentId AS cluster,gds.util.asNode(nodeId) AS client
+WITH cluster,collect(client.id) AS clients
+WITH *,size(clients) AS clusterSize
+WHERE clusterSize&gt;1
+RETURN cluster,clusterSize,clients
+ORDER by clusterSize DESC;<!--/code--></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Modes of execution: <a href="https://neo4j.com/docs/graph-data-science/current/common-usage/running-algos/#running-algos" target="_blank">Running Algorithms</a></p>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Exercise 2, Task 5: Write results to the database.</h3>
+    <br/>
+    <div>
+      <div class="ulist">
+<ul>
+<li>
+<p>Writing results</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Write mode lets us write back the results to the database.</p>
+</li>
+<li>
+<p>Instead of write mode, here we are going to use cypher to filter clusters based on the size (&gt;1)
+and then set a property on Client nodes</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->CALL gds.wcc.stream('WCC')
+YIELD componentId,nodeId
+WITH componentId AS cluster,gds.util.asNode(nodeId) AS client
+WITH cluster, collect(client.id) AS clients
+WITH *,size(clients) AS clusterSize
+WHERE clusterSize&gt;1
+UNWIND clients AS client
+MATCH(c:Client)
+WHERE c.id=client
+SET c.firstPartyFraudGroup=cluster;<!--/code--></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Exercise 2, Task 6: Collect and visualize clusters</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>Visualize clusters of clients sharing information.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH (c:Client)
+WITH c.firstPartyFraudGroup AS fpGroupID, collect(c.id) AS fGroup
+WITH *, size(fGroup) AS groupSize WHERE groupSize &gt;= 9
+WITH collect(fpGroupID) AS fraudRings
+MATCH p=(c:Client)-[:HAS_SSN|HAS_EMAIL|HAS_PHONE]-&gt;()
+WHERE c.firstPartyFraudGroup IN fraudRings
+RETURN p<!--/code--></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Exercise 3: Finding similar clients within clusters</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>Finding similar clients with a cluster is accomplished by running one of the paiwrise similarity algorithms
+implemented in our GDS library.</p>
+</div>
+<div class="paragraph">
+<p>We use node similarity to find similar nodes based on the relationships to other nodes. Node similarity uses
 Jaccard metric which computes similarity score for a pair of nodes by looking at
 related nodes in the network that are common to both the nodes divided by the sum of all nodes related to both the nodes.
-More informaton here: https://neo4j.com/docs/graph-data-science/current/algorithms/node-similarity/#algorithms-node-similarity[Node Similarity documentation^]
-
-Node similarity algorithms work on bipartite graphs (two types of nodes and relationships between them).
+More informaton here: <a href="https://neo4j.com/docs/graph-data-science/current/algorithms/node-similarity/#algorithms-node-similarity" target="_blank">Node Similarity documentation</a></p>
+</div>
+<div class="paragraph">
+<p>Node similarity algorithms work on bipartite graphs (two types of nodes and relationships between them).
 Here we project client nodes (one type) and three identifiers nodes
-(that are considered as second type) into memory. The clients who have these identifiers in common are similar to each other.
+(that are considered as second type) into memory. The clients who have these identifiers in common are similar to each other.</p>
+</div>
+	</div>
+  </div>
+</slide>
 
-== Exercise 3, Task 1: Create a graph
-Here we use cypher projection to create an in-memory graph for running our similarity algorithm.
-We chose 'Similarity' as our graph name in this tutorial for running node similarity algorithm
 
-[source,cypher]
-----
-include::{sourcedir}/loadSimilarityNamedGraph.cypher[]
-----
 
-Cypher projection syntax: https://neo4j.com/docs/graph-data-science/current/management-ops/cypher-projection/#cypher-projection[Cypher projection^]
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Exercise 3, Task 1: Create a graph</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>Here we use cypher projection to create an in-memory graph for running our similarity algorithm.
+We chose 'Similarity' as our graph name in this tutorial for running node similarity algorithm</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->CALL gds.graph.create.cypher('Similarity',
+'MATCH(c:Client)
+    WHERE exists(c.firstPartyFraudGroup)
+    RETURN id(c) AS id,labels(c) AS labels
+UNION
+MATCH(n)
+    WHERE n:Email OR n:Phone OR n:SSN
+    RETURN id(n) AS id,labels(n) AS labels',
+'MATCH(c:Client)
+-[:HAS_EMAIL|HAS_PHONE|HAS_SSN]-&gt;(ids)
+WHERE exists(c.firstPartyFraudGroup)
+RETURN id(c) AS source,id(ids) AS target')
+YIELD graphName,nodeCount,relationshipCount,createMillis;<!--/code--></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Cypher projection syntax: <a href="https://neo4j.com/docs/graph-data-science/current/management-ops/cypher-projection/#cypher-projection" target="_blank">Cypher projection</a></p>
+</div>
+	</div>
+  </div>
+</slide>
 
-== Exercise 3, Task 2: Streaming node similarity results
 
-[source,cypher]
-----
-include::{sourcedir}/similarityStream.cypher[]
-----
 
-== Exercise 3, Task 3: Writing similarity scores to the in-memory graph
-We can mutate in-memory graph by writing outputs from the algorithm as node or relationship properties.
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Exercise 3, Task 2: Streaming node similarity results</h3>
+    <br/>
+    <div>
+      <div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->CALL gds.nodeSimilarity.stream('Similarity',{topK:15})
+YIELD node1,node2,similarity
+RETURN gds.util.asNode(node1).id AS client1,
+    gds.util.asNode(node2).id AS client2,similarity
+ORDER BY similarity;<!--/code--></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
 
-[source,cypher]
-----
-include::{sourcedir}/similarityMutate.cypher[]
-----
 
-Mutate mode is very useful when you execute more than one algorithm in a pipeline where outputs from the first algo
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Exercise 3, Task 3: Writing similarity scores to the in-memory graph</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>We can mutate in-memory graph by writing outputs from the algorithm as node or relationship properties.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->CALL gds.nodeSimilarity.mutate('Similarity',{topK:15,
+  mutateProperty:'jaccardScore', mutateRelationshipType:'SIMILAR_TO'});<!--/code--></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Mutate mode is very useful when you execute more than one algorithm in a pipeline where outputs from the first algo
 is used as inputs to the second algorithm in the pipeline. Mutate mode is very fast compared to write mode and it helps
-in optimizing algorithm execution times.
-
-== Exercise 3, Task 4: Writing results from in-memory graph to the Database
-In this step, we write back the property from in-memory graph to the database and use it for further analysis
-
-[source,cypher]
-----
-include::{sourcedir}/similarityWrite.cypher[]
-----
-
-== Exercise 3, Task 5: Visualize
-Let's see the newly created `SIMILAR_TO` relationships and how similar clients are based on similarity score
-
-[source,cypher]
-----
-include::{sourcedir}/similarityDisplay.cypher[]
-----
-
-== Exercise 4: First-party Fraud Score
-In this step, we compute and assign fraud score (`firstPartyFraudScore`) to clients in the clusters identified in previous steps
-based on `SIMILAR_TO` relationships weighted by `jaccardScore`
-
-We use one of the centrality algorithms (Degree Centrality) to add up `jaccardScore` on the incoming
-and outgoing relationships for a given node in a cluster and assign the sum as the corresponding `firstPartyFraudScore`.
-This score represents clients who are similar to many others in the cluster in terms of sharing identifiers.
-
-Here the assumption is higher the `firstPartyFraudScore` greater the potential for committing fraud.
-
-== Exercise 4, Task 1: Calculating centrality score using Degree Centrality
-
-[source,cypher]
-----
-include::{sourcedir}/degreeStream.cypher[]
-----
-More on Degree Centrality: https://neo4j.com/docs/graph-data-science/current/algorithms/degree-centrality/#algorithms-degree-centrality[Degree Centrality^]
-
-== Exercise 4, Task 2: Writing the Degree Centrality to the database
-We write back centrality scores as `firstPartyFraudScore` to the database using algorithm write mode.
-
-[source,cypher]
-----
-include::{sourcedir}/degreeWrite.cypher[]
-----
-
-Modes of execution: https://neo4j.com/docs/graph-data-science/current/common-usage/running-algos/#running-algos[Running Algorithms^]
+in optimizing algorithm execution times.</p>
+</div>
+	</div>
+  </div>
+</slide>
 
 
-== Exercise 4, Task 3: Adding labels to Clients based on fraud score
 
-Exploring the clients with first-party fraud score grater than some threshold. In this example, using 80th percentile as a threshold,
-we set a property `FirstPartyFraudster` on the Client node.
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Exercise 3, Task 4: Writing results from in-memory graph to the Database</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>In this step, we write back the property from in-memory graph to the database and use it for further analysis</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->CALL gds.graph.writeRelationship('Similarity','SIMILAR_TO','jaccardScore');<!--/code--></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
 
-[source,cypher]
-----
-include::{sourcedir}/firstPartyFraudScoreWrite.cypher[]
-----
 
-== Exercise 5: Clean up  Graph Catalog
 
-[source,cypher]
-----
-include::{sourcedir}/removeNamedGraphs.cypher[]
-----
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Exercise 3, Task 5: Visualize</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>Let&#8217;s see the newly created <code>SIMILAR_TO</code> relationships and how similar clients are based on similarity score</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH (c:Client)
+WITH c.firstPartyFraudGroup AS fpGroupID, collect(c.id) AS fGroup
+WITH *, size(fGroup) AS groupSize WHERE groupSize &gt;= 9
+WITH collect(fpGroupID) AS fraudRings
+MATCH p=(c:Client)-[:SIMILAR_TO]-&gt;()
+WHERE c.firstPartyFraudGroup IN fraudRings
+RETURN p<!--/code--></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
 
-== End of Module 3
 
-In this module we were accomplished the following tasks:
 
-. Identified clusters of clients sharing PII
-. Computed pairwise similarity based on shared PII
-. Computed first-party fraud score and
-. Identified first-party fraudsters
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Exercise 4: First-party Fraud Score</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>In this step, we compute and assign fraud score (<code>firstPartyFraudScore</code>) to clients in the clusters identified in previous steps
+based on <code>SIMILAR_TO</code> relationships weighted by <code>jaccardScore</code></p>
+</div>
+<div class="paragraph">
+<p>We use one of the centrality algorithms (Degree Centrality) to add up <code>jaccardScore</code> on the incoming
+and outgoing relationships for a given node in a cluster and assign the sum as the corresponding <code>firstPartyFraudScore</code>.
+This score represents clients who are similar to many others in the cluster in terms of sharing identifiers.</p>
+</div>
+<div class="paragraph">
+<p>Here the assumption is higher the <code>firstPartyFraudScore</code> greater the potential for committing fraud.</p>
+</div>
+	</div>
+  </div>
+</slide>
 
-== Module 4: Second-party Fraud
 
-This module consists of the following exercises:
 
-. Identify and explore transactions between first-party fraudsters and other clients
-. Identify Second-party Fraud networks
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Exercise 4, Task 1: Calculating centrality score using Degree Centrality</h3>
+    <br/>
+    <div>
+      <div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->CALL gds.degree.stream('Similarity',{nodeLabels:['Client'],relationshipTypes:['SIMILAR_TO'],relationshipWeightProperty:'jaccardScore'})
+YIELD nodeId,score
+RETURN gds.util.asNode(nodeId).id AS client,score
+ORDER BY score DESC;<!--/code--></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>More on Degree Centrality: <a href="https://neo4j.com/docs/graph-data-science/current/algorithms/degree-centrality/#algorithms-degree-centrality" target="_blank">Degree Centrality</a></p>
+</div>
+	</div>
+  </div>
+</slide>
 
-== Exercise 1, Task 1: Identifying Transactions Between First-party Fraudsters and Client
-First step is to find out Clients who weren't identified as first party fraudsters
-but they transact with first party fraudsters
 
-[source,cypher]
-----
-include::{sourcedir}/firstPartyFraudstersTransactions.cypher[]
-----
 
-Also, lets find out what types of transactions do these Clients perform with first party fraudsters
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Exercise 4, Task 2: Writing the Degree Centrality to the database</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>We write back centrality scores as <code>firstPartyFraudScore</code> to the database using algorithm write mode.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->CALL gds.degree.write('Similarity',{nodeLabels:['Client'],
+    relationshipTypes:['SIMILAR_TO'],
+    relationshipWeightProperty:'jaccardScore',
+    writeProperty:'firstPartyFraudScore'});<!--/code--></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Modes of execution: <a href="https://neo4j.com/docs/graph-data-science/current/common-usage/running-algos/#running-algos" target="_blank">Running Algorithms</a></p>
+</div>
+	</div>
+  </div>
+</slide>
 
-[source,cypher]
-----
-include::{sourcedir}/firstPartyFraudstersTransactionsType.cypher[]
-----
 
-== Exercise 1, Task 2: Create new relationships
-Let's go ahead and create `TRANSFER_TO` relationships between clients with `firstPartyFraudster` tags and
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Exercise 4, Task 3: Adding labels to Clients based on fraud score</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>Exploring the clients with first-party fraud score grater than some threshold. In this example, using 80th percentile as a threshold,
+we set a property <code>FirstPartyFraudster</code> on the Client node.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH(c:Client)
+WHERE exists(c.firstPartyFraudScore)
+WITH percentileCont(c.firstPartyFraudScore, 0.8)
+    AS firstPartyFraudThreshold
+MATCH(c:Client)
+WHERE c.firstPartyFraudScore&gt;firstPartyFraudThreshold
+SET c:FirstPartyFraudster;<!--/code--></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Exercise 5: Clean up  Graph Catalog</h3>
+    <br/>
+    <div>
+      <div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->CALL gds.graph.list()
+YIELD graphName AS namedGraph
+WITH namedGraph
+CALL gds.graph.drop(namedGraph)
+YIELD graphName
+RETURN graphName;<!--/code--></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>End of Module 3</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>In this module we were accomplished the following tasks:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Identified clusters of clients sharing PII</p>
+</li>
+<li>
+<p>Computed pairwise similarity based on shared PII</p>
+</li>
+<li>
+<p>Computed first-party fraud score and</p>
+</li>
+<li>
+<p>Identified first-party fraudsters</p>
+</li>
+</ol>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Module 4: Second-party Fraud</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>This module consists of the following exercises:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Identify and explore transactions between first-party fraudsters and other clients</p>
+</li>
+<li>
+<p>Identify Second-party Fraud networks</p>
+</li>
+</ol>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Exercise 1, Task 1: Identifying Transactions Between First-party Fraudsters and Client</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>First step is to find out Clients who weren&#8217;t identified as first party fraudsters
+but they transact with first party fraudsters</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH p=(:Client:FirstPartyFraudster)-[]-(:Transaction)-[]-(c:Client)
+WHERE NOT c:FirstPartyFraudster
+RETURN p;<!--/code--></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Also, lets find out what types of transactions do these Clients perform with first party fraudsters</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH (:Client:FirstPartyFraudster)-[]-(txn:Transaction)-[]-(c:Client)
+WHERE NOT c:FirstPartyFraudster
+UNWIND labels(txn) AS transactionType
+RETURN transactionType, count(*) AS freq;<!--/code--></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Exercise 1, Task 2: Create new relationships</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>Let&#8217;s go ahead and create <code>TRANSFER_TO</code> relationships between clients with <code>firstPartyFraudster</code> tags and
 clients with no such tags but transact with fraudsters.
-Also, let's go ahead and add the total amount from all such
-transactions as a property on `TRANSFER_TO` relationships.
+Also, let&#8217;s go ahead and add the total amount from all such
+transactions as a property on <code>TRANSFER_TO</code> relationships.</p>
+</div>
+<div class="paragraph">
+<p>Since the total amount transferred from a fraudster to a client and the total amount transferred in the reverse direction
+are not the same, we have to create relationships in two separate queries.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>TRANSFER_TO</code> relationship from a fraudster to a client (<strong>look at the directions in queries</strong>)</p>
+</li>
+<li>
+<p>Add <code>SecondPartyFraudSuspect</code> tag to these clients</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH (c1:Client:FirstPartyFraudster)-[]-&gt;(t:Transaction)-[]-&gt;(c2:Client)
+WHERE NOT c2:FirstPartyFraudster
+WITH c1,c2,sum(t.amount) AS totalAmount
+SET c2:SecondPartyFraudSuspect
+CREATE (c1)-[:TRANSFER_TO {amount:totalAmount}]-&gt;(c2);<!--/code--></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>TRANSFER_TO</code> relationship from a client to a fraudster</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH (c1:Client:FirstPartyFraudster)&lt;-[]-(t:Transaction)&lt;-[]-(c2:Client)
+WITH c1,c2,sum(t.amount) AS totalAmount
+CREATE (c1)&lt;-[:TRANSFER_TO {amount:totalAmount}]-(c2);<!--/code--></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
 
-Since the total amount transferred from a fraudster to a client and the total amount transferred in the reverse direction
-are not the same, we have to create relationships in two separate queries.
-
-* `TRANSFER_TO` relationship from a fraudster to a client (*look at the directions in queries*)
-* Add `SecondPartyFraudSuspect` tag to these clients
-
-[source,cypher]
-----
-include::{sourcedir}/firstPartyFraudstersTransferTo.cypher[]
-----
-
-* `TRANSFER_TO` relationship from a client to a fraudster
 
 
-[source,cypher]
-----
-include::{sourcedir}/firstPartyFraudstersTransferFrom.cypher[]
-----
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Exercise 1, Task 3: Visualize relationships</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>Visualize newly created <code>TRANSFER_TO</code> relationships</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH p=(:Client:FirstPartyFraudster)-[:TRANSFER_TO]-(c:Client)
+WHERE NOT c:FirstPartyFraudster
+RETURN p;<!--/code--></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
 
-== Exercise 1, Task 3: Visualize relationships
-Visualize newly created `TRANSFER_TO` relationships
 
-[source,cypher]
-----
-include::{sourcedir}/secondPartyFraudDisplay.cypher[]
-----
 
-== Exercise 2: Identifying Second-party Fraud
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Exercise 2: Identifying Second-party Fraud</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>Our objective is to find out clients who may have colluded with first party fraudsters and were not
+identified as potential first party fraudsters.</p>
+</div>
+<div class="paragraph">
+<p>Our hypothesis is that clients who perform transactions of type <code>Transfer</code> where they either send to or receive money from
+first party fraudsters are suspects for second party fraud.</p>
+</div>
+<div class="paragraph">
+<p>To identify such clients, make use of <code>TRANSFER_TO</code> relationships and use this recipe:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Use a community detection algorithm (WCC) to identify networks of clients who are conencted to
+first party fraudsters</p>
+</li>
+<li>
+<p>Use a centrality algorithm (Page Rank) to compute a score based on how influential these clients are
+when relationships take into account the amount of money transferred to/from fraudsters</p>
+</li>
+<li>
+<p>Use pagerank score to assign <code>secondPartyFraudScore</code> (risk score) to these clients</p>
+</li>
+</ol>
+</div>
+	</div>
+  </div>
+</slide>
 
-Our objective is to find out clients who may have colluded with first party fraudsters and were not
-identified as potential first party fraudsters.
 
-Our hypothesis is that clients who perform transactions of type `Transfer` where they either send to or receive money from
-first party fraudsters are suspects for second party fraud.
 
-To identify such clients, make use of `TRANSFER_TO` relationships and use this recipe:
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Exercise 2, Task 1: Create an in-memory Graph</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>Let&#8217;s use native projection and create an in-memory graph with <code>Client</code> nodes and <code>TRANSFER_TO</code> relationships.
+Since we plan to use a community detection algorithm here, we should project a monopartite graph.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->CALL gds.graph.create('SecondPartyFraudNetwork','Client','TRANSFER_TO',{relationshipProperties:'amount'});<!--/code--></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
 
-. Use a community detection algorithm (WCC) to identify networks of clients who are conencted to
-first party fraudsters
-. Use a centrality algorithm (Page Rank) to compute a score based on how influential these clients are
-when relationships take into account the amount of money transferred to/from fraudsters
-. Use pagerank score to assign `secondPartyFraudScore` (risk score) to these clients
 
-== Exercise 2, Task 1: Create an in-memory Graph
-Let's use native projection and create an in-memory graph with `Client` nodes and `TRANSFER_TO` relationships.
-Since we plan to use a community detection algorithm here, we should project a monopartite graph.
 
-[source,cypher]
-----
-include::{sourcedir}/secondPartyFraudNamedGraph.cypher[]
-----
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Exercise 2, Task 2: Execute WCC to find clusters</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>We will see if there are any clusters with more than one clients in them and if there are, then
+we should add a tag <code>secondPartyFraudGroup</code> to find them later using local queries.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Stream results</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->CALL gds.wcc.stream('SecondPartyFraudNetwork')
+YIELD nodeId,componentId
+WITH gds.util.asNode(nodeId) AS client,componentId AS clusterId
+WITH clusterId,collect(client.id) AS cluster
+WITH clusterId,size(cluster) AS clusterSize,cluster
+WHERE clusterSize&gt;1
+RETURN clusterId,clusterSize
+ORDER BY clusterSize DESC;<!--/code--></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Write results to the database</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->CALL gds.wcc.stream('SecondPartyFraudNetwork')
+YIELD nodeId,componentId
+WITH gds.util.asNode(nodeId) AS client,componentId AS clusterId
+WITH clusterId,collect(client.id) AS cluster
+WITH clusterId,size(cluster) AS clusterSize,cluster
+WHERE clusterSize&gt;1
+UNWIND cluster AS client
+MATCH(c:Client {id:client})
+SET c.secondPartyFraudGroup=clusterId;<!--/code--></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
 
-== Exercise 2, Task 2: Execute WCC to find clusters
-We will see if there are any clusters with more than one clients in them and if there are, then
-we should add a tag `secondPartyFraudGroup` to find them later using local queries.
 
-* Stream results
 
-[source,cypher]
-----
-include::{sourcedir}/secondPartyFraudWccStream.cypher[]
-----
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Exercise 2, Task 3: Identifying Second-party Fraudsters</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>Let&#8217;s go ahead and compute centrality score using Page Rank algorithm to find out who among
+the suspects have relatively higher pagerank scores. Please note that relationships are weighted by the total amount transferred to fraudsters.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Stream results</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->CALL gds.pageRank.stream('SecondPartyFraudNetwork',{relationshipWeightProperty:'amount'})
+YIELD nodeId,score
+WITH gds.util.asNode(nodeId) AS client,score AS pageRankScore
+WHERE exists(client.secondPartyFraudGroup)
+RETURN client.secondPartyFraudGroup,client.name,labels(client),pageRankScore
+ORDER BY client.secondPartyFraudGroup,pageRankScore DESC;<!--/code--></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Write results to the database</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Attach a <code>secondPartyFraudScore</code> tag to the clients with page rank scores as values</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->CALL gds.pageRank.stream('SecondPartyFraudNetwork',{relationshipWeightProperty:'amount'})
+YIELD nodeId,score
+WITH gds.util.asNode(nodeId) AS client,score AS pageRankScore
+WHERE exists(client.secondPartyFraudGroup)
+	AND pageRankScore &gt;1 AND NOT client:FirstPartyFraudster
+MATCH(c:Client {id:client.id})
+SET c:SecondPartyFraud
+SET c.secondPartyFraudScore=pageRankScore;<!--/code--></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>More information here: <a href="https://neo4j.com/docs/graph-data-science/current/algorithms/page-rank/#algorithms-pagerank" target="_blank">Page Rank</a></p>
+</div>
+	</div>
+  </div>
+</slide>
 
-* Write results to the database
 
-[source,cypher]
-----
-include::{sourcedir}/secondPartyFraudWccWrite.cypher[]
-----
 
-== Exercise 2, Task 3: Identifying Second-party Fraudsters
-Let's go ahead and compute centrality score using Page Rank algorithm to find out who among
-the suspects have relatively higher pagerank scores. Please note that relationships are weighted by the total amount transferred to fraudsters.
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Exercise 2, Task 4: Visualize second party fraud networks</h3>
+    <br/>
+    <div>
+      <div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH p=(:Client:FirstPartyFraudster)-[:TRANSFER_TO]-(c:Client)
+WHERE NOT c:FirstPartyFraudster
+RETURN p;<!--/code--></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
 
-* Stream results
 
-[source,cypher]
-----
-include::{sourcedir}/secondPartyFraudPageRankStream.cypher[]
-----
-* Write results to the database
-** Attach a `secondPartyFraudScore` tag to the clients with page rank scores as values
 
-[source,cypher]
-----
-include::{sourcedir}/secondPartyFraudPageRankWrite.cypher[]
-----
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Exercise 3: Clean up after yourself!</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>It is a good practice to removing all graphs from the Graph Catalog once you are done with executing algorithms and
+writing results back to the database</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->CALL gds.graph.list()
+YIELD graphName AS namedGraph
+WITH namedGraph
+CALL gds.graph.drop(namedGraph)
+YIELD graphName
+RETURN graphName;<!--/code--></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
 
-More information here: https://neo4j.com/docs/graph-data-science/current/algorithms/page-rank/#algorithms-pagerank[Page Rank^]
 
-== Exercise 2, Task 4: Visualize second party fraud networks
 
-[source,cypher]
-----
-include::{sourcedir}/secondPartyFraudDisplay.cypher[]
-----
-
-== Exercise 3: Clean up after yourself!
-
-It is a good practice to removing all graphs from the Graph Catalog once you are done with executing algorithms and
-writing results back to the database
-
-[source,cypher]
-----
-include::{sourcedir}/removeNamedGraphs.cypher[]
-----
-
-== End of Module 4
-
-In this module we accomplish the following task:
-
-. Identified clusters of clients and first-party fraudsters transferring money between them
-. Calculated a second-party fraud score and identified second-party fraudsters
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>End of Module 4</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>In this module we accomplish the following task:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Identified clusters of clients and first-party fraudsters transferring money between them</p>
+</li>
+<li>
+<p>Calculated a second-party fraud score and identified second-party fraudsters</p>
+</li>
+</ol>
+</div>
+	</div>
+  </div>
+</slide>
+  </carousel>
+</article>
