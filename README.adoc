@@ -16,8 +16,10 @@
 :rendered-guide: https://guides.neo4j.com/sandbox/{name}/index.html
 :model: documentation/img/model.svg
 :example: documentation/img/example.png
-
+:nodes: 332973
+:relationships: 980857
 :todo: false
+
 image::{icon}[width=100]
 
 == {long-name} Graph Example
@@ -27,6 +29,8 @@ Description: _{description}_
 ifeval::[{todo} != false]
 To Do: {todo}
 endif::[]
+
+Nodes {nodes} Relationships {relationships}
 
 .Model
 image::{model}[]
