@@ -1,0 +1,1 @@
+:param bigFirstPartyFraudGroups=>apoc.cypher.runFirstColumnSingle('MATCH (c:Client) WHERE exists(c.firstPartyFraudGroup) WITH c.firstPartyFraudGroup AS firstPartyFraudGroupId,collect(c.id) AS group WITH *, size(group) AS groupSize WHERE groupSize >= 9 RETURN collect(firstPartyFraudGroupId) AS bigFirstPartyFraudGroups',{});

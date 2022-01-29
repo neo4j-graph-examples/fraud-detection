@@ -238,7 +238,7 @@ database and calculating frequencies and relative frequencies.</p>
 <div class="listingblock">
 <div class="content">
 <pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->CALL db.labels() YIELD label
-CALL apoc.cypher.run('MATCH (:`'+label+'`) RETURN count(*) as freq',{})
+CALL apoc.cypher.run('MATCH (:`'+label+'`) RETURN count(*) as freq',{}) 
 YIELD value
 WITH label,value.freq AS freq
 CALL apoc.meta.stats() YIELD nodeCount
@@ -265,7 +265,7 @@ in the database and calculating frequencies and relative frequencies.</p>
 <div class="listingblock">
 <div class="content">
 <pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->CALL db.relationshipTypes() YIELD relationshipType as type
-CALL apoc.cypher.run('MATCH ()-[:`'+type+'`]-&gt;() RETURN count(*) as freq',{})
+CALL apoc.cypher.run('MATCH ()-[:`'+type+'`]-&gt;() RETURN count(*) as freq',{}) 
 YIELD value
 WITH type AS relationshipType, value.freq AS freq
 CALL apoc.meta.stats() YIELD relCount
@@ -320,8 +320,8 @@ of all transaction types.</p>
 WITH sum(t.amount) AS globalSum, count(t) AS globalCnt
 WITH *, 10^3 AS scaleFactor
 UNWIND ['CashIn', 'CashOut', 'Payment', 'Debit', 'Transfer'] AS txType
-  CALL apoc.cypher.run('MATCH (t:' + txType + ')
-    RETURN sum(t.amount) as txAmount, count(t) AS txCnt', {})
+  CALL apoc.cypher.run('MATCH (t:' + txType + ') 
+    RETURN sum(t.amount) as txAmount, count(t) AS txCnt', {}) 
   YIELD value
 RETURN txType,value.txAmount AS TotalMarketValue,
   100*round(scaleFactor*(toFloat(value.txAmount)/toFloat(globalSum)))
@@ -413,8 +413,8 @@ ORDER BY `%MarketTransactions` DESC;<!--/code--></pre>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH (c1:Client)-[:HAS_EMAIL|HAS_PHONE|HAS_SSN]-&gt;(info)
-&lt;-[:HAS_EMAIL|HAS_PHONE|HAS_SSN]-(c2:Client)
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH (c1:Client)-[:HAS_EMAIL|:HAS_PHONE|:HAS_SSN]-&gt;(info)
+&lt;-[:HAS_EMAIL|:HAS_PHONE|:HAS_SSN]-(c2:Client)
 WHERE c1.id&lt;&gt;c2.id
 RETURN c1.id,c2.id,count(*) AS freq ORDER BY freq DESC;<!--/code--></pre>
 </div>
@@ -424,8 +424,8 @@ RETURN c1.id,c2.id,count(*) AS freq ORDER BY freq DESC;<!--/code--></pre>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH (c1:Client)-[:HAS_EMAIL|HAS_PHONE|HAS_SSN]-&gt;(info)
-&lt;-[:HAS_EMAIL|HAS_PHONE|HAS_SSN]-(c2:Client)
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH (c1:Client)-[:HAS_EMAIL|:HAS_PHONE|:HAS_SSN]-&gt;(info)
+&lt;-[:HAS_EMAIL|:HAS_PHONE|:HAS_SSN]-(c2:Client)
 WHERE c1.id&lt;&gt;c2.id
 RETURN count(DISTINCT c1.id) AS freq;<!--/code--></pre>
 </div>
@@ -447,8 +447,8 @@ shared identifiers as a property on that relationship</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH (c1:Client)-[:HAS_EMAIL|HAS_PHONE|HAS_SSN]-&gt;(info)
-&lt;-[:HAS_EMAIL|HAS_PHONE|HAS_SSN]-(c2:Client)
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH (c1:Client)-[:HAS_EMAIL|:HAS_PHONE|:HAS_SSN]-&gt;(info)
+&lt;-[:HAS_EMAIL|:HAS_PHONE|:HAS_SSN]-(c2:Client)
 WHERE c1.id&lt;&gt;c2.id
 WITH c1, c2, count(*) as cnt
 MERGE (c1) - [:SHARED_IDENTIFIERS {count: cnt}] - (c2);<!--/code--></pre>
@@ -730,7 +730,7 @@ WITH cluster, collect(client.id) AS clients
 WITH *,size(clients) AS clusterSize
 WHERE clusterSize&gt;1
 UNWIND clients AS client
-MATCH(c:Client)
+MATCH(c:Client) 
 WHERE c.id=client
 SET c.firstPartyFraudGroup=cluster;<!--/code--></pre>
 </div>
@@ -812,7 +812,7 @@ MATCH(n)
     WHERE n:Email OR n:Phone OR n:SSN
     RETURN id(n) AS id,labels(n) AS labels',
 'MATCH(c:Client)
--[:HAS_EMAIL|HAS_PHONE|HAS_SSN]-&gt;(ids)
+-[:HAS_EMAIL|:HAS_PHONE|:HAS_SSN]-&gt;(ids)
 WHERE exists(c.firstPartyFraudGroup)
 RETURN id(c) AS source,id(ids) AS target')
 YIELD graphName,nodeCount,relationshipCount,createMillis;<!--/code--></pre>
@@ -997,7 +997,7 @@ we set a property <code>FirstPartyFraudster</code> on the Client node.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH(c:Client)
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH(c:Client) 
 WHERE exists(c.firstPartyFraudScore)
 WITH percentileCont(c.firstPartyFraudScore, 0.8)
     AS firstPartyFraudThreshold

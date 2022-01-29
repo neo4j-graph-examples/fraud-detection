@@ -1,0 +1,1 @@
+:param clients=>apoc.cypher.runFirstColumnSingle('MATCH (c1:Client)-[:HAS_EMAIL|:HAS_PHONE|:HAS_SSN]->(info)<-[:HAS_EMAIL|:HAS_PHONE|:HAS_SSN]-(c2:Client) WHERE id(c1)<>id(c2) WITH c1,c2,count(*) AS freq RETURN {client1 :c1.id,client2:c2.id} ORDER BY freq LIMIT 1',{});

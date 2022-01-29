@@ -1,0 +1,1 @@
+MATCH p = (c:Client) - [s:SHARED_IDENTIFIERS] - () WHERE s.count >= 2 RETURN p limit 25;
