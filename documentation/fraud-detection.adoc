@@ -2,39 +2,26 @@
 :presenter: Neo Technology
 :twitter: neo4j
 :email: info@neotechnology.com
-:neo4j-version: 3.5.17
-:currentyear: 2020
+:neo4j-version: 4.x
+:currentyear: 2022
 :doctype: book
 :toc: left
 :toclevels: 3
 :currsect: 0
-:imagedir: http://localhost:8001/img
-:sourcedir: scripts
+:html: http://localhost:8001/html
 
 
 == Fraud Detection and Investigation Using Graph Data Science Library
 
-Example GDS workflow to demonstrate application of Graph Data Science in the financial domain.
-This browser guide contains snippets of cypher code and a brief explanation in each slide to help with the
-hands-on exercises.
+Example GDS workflow to demonstrate fraud detection and investigation using Neo4j Graph Data Science. This browser guide contains snippets of cypher code and a brief explanation in each slide to help with the demo.
 
-We will use the GDS Library to get you started with few scenarios in  first party and synthetic identity fraud detection
-and investigation.
+We will use the GDS Library to get you started with few scenarios in first party and synthetic identity fraud detection and investigation.
 
-There are four modules in this playguide
-
-. Problem Definition
-. Preliminary Data Analysis
-. First-party Fraud
-. Second-party Fraud
-
-== Module 1: Problem Definition
+== Problem Definition
 
 === *What is Fraud?*
 
-*Fraud occurs* when an individual or group of individuals, or a business entity *intentionally*
-deceives another individual or business entity with *misrepresentation* of identity, products,
-services, or financial transactions and/or *false promises* with no intention of fulfilling them.
+*Fraud occurs* when an individual or group of individuals, or a business entity *intentionally* deceives another individual or business entity with *misrepresentation* of identity, products, services, or financial transactions and/or *false promises* with no intention of fulfilling them.
 
 {nbsp} + 
 
@@ -47,33 +34,34 @@ services, or financial transactions and/or *false promises* with no intention of
 ** An individual knowingly gives their identity or personal information to another individual to commit fraud or someone is perpetrating fraud in his behalf.
 
 * *Third-party Fraud*
-** An individual, or group of individuals, create or use another person's identity, or personal details, to open or takeover an account.
+** An individual, or a group of individuals, create or use another person's identity, or personal details, to open or takeover an account.
 
+== Exercises
 
-== Module 2: Preliminary Data Analysis
+We will use Neo4j GDS library to detect and label two types of fraudsters
 
-We will use Paysim dataset for the hands-on exercises. Paysim is a synthetic dataset that mimics
-real world mobile money transfer network.
+. First party fraudsters (Module #1)
+. Money Mules (Module #2)
+
+== Preliminary Data Analysis
+
+We will use Paysim dataset for the hands-on exercises. Paysim is a synthetic dataset that mimics real world mobile money transfer network.
 
 Let's explore the dataset.
 
-. Database Schema
-. Stats
-. Node Labels
-. Relationship Types
-. Nodes & Relationship Properties
+. Database Schema and Stats
+. Nodes and Relationships
 . Transaction Types
 
 For more information on the dataset, please visit  https://www.sisu.io/posts/paysim/[Dave Voutila's Blog^]
 
-== Exercise 1: Database Schema
+== Database Schema and Stats
 
 [source,cypher]
 ----
 CALL db.schema.visualization();
 ----
 
-== Exercise 2: Stats
 Counts of nodes, node labels, relationships, relationship types, property keys and statistics using our APOC library.
 
 [source,cypher]
@@ -81,357 +69,362 @@ Counts of nodes, node labels, relationships, relationship types, property keys a
 CALL apoc.meta.stats();
 ----
 
-== Exercise 3: Node Labels
-List all the node labels and corresponding frequencies. This is done by iterating over all the node labels in the
-database and calculating frequencies and relative frequencies.
+== Nodes and Relationships
+List all the node labels and corresponding counts.
 
 [source,cypher]
 ----
-include::{sourcedir}/nodeFrequency.cypher[]
+CALL db.labels() YIELD label
+CALL apoc.cypher.run('MATCH (:`'+label+'`) RETURN count(*) as count', {})
+YIELD value
+RETURN label as Label, value.count AS Count
 ----
 
-== Exercise 4: Relationship Types
-List all the relationship types and corresponding frequencies. This is done by iterating over all the relationship types
-in the database and calculating frequencies and relative frequencies.
+List all relationship types and corresponding counts.
 
 [source,cypher]
 ----
-include::{sourcedir}/relationshipFrequency.cypher[]
+CALL db.relationshipTypes() YIELD relationshipType as type
+CALL apoc.cypher.run('MATCH ()-[:`'+type+'`]->() RETURN count(*) as count', {})
+YIELD value
+RETURN type AS Relationship, value.count AS Count
 ----
 
-== Exercise 5: Nodes & Relationship Properties
-List all nodes and relationship properties.
+
+== Transaction Types
+There are five types of transactions in this database. List all transaction types and corresponding metrics by iterating over all the transactions.
 
 [source,cypher]
 ----
-include::{sourcedir}/nodeRelationshipProperties.cypher[]
+MATCH (t:Transaction)
+WITH count(t) AS globalCnt
+UNWIND ['CashIn', 'CashOut', 'Payment', 'Debit', 'Transfer'] AS txType
+  CALL apoc.cypher.run('MATCH (t:' + txType + ')
+    RETURN count(t) AS txCnt', {})
+  YIELD value
+RETURN txType, value.txCnt AS NumberOfTransactions,
+  round(toFloat(value.txCnt)/toFloat(globalCnt), 2) AS `%Transactions`
+ORDER BY `%Transactions` DESC;
 ----
 
-== Exercise 6: Transaction Types
-There are five types of transactions in this database. List all transaction types and corresponding metrics like
-total market value, relative market values, number of transactions etc. by iterating over all the transactions
-of all transaction types.
+
+== Module #1: First-party Fraud
+
+Synthetic identity fraud and first party fraud can be identified by performing entity link analysis to detect identities linked to other identities via shared PII.
+
+There are three types of personally identifiable information (PII) in this dataset - SSN, Email and Phone Number
+
+Our hypothesis is that clients who share identifiers are suspicious and have a higher potential to commit fraud. However, all shared identifier links are not suspicious, for example, two people sharing an email address. Hence, we compute a fraud score based on shared PII relationships and label the top X percentile clients as fraudsters.
+
+We will first identify clients that share identifiers and create a new relationship between clients that share identifiers
+
+== Identify clients sharing PII
 
 [source,cypher]
 ----
-include::{sourcedir}/transactionFrequency.cypher[]
-----
-
-== End of Module 2
-
-In this module we explored the PaySim dataset and collected some statistics:
-
-. Database schema and size
-. Node labels and relationship types distributions
-. Node and relationship properties
-. Transaction type distribution
-
-== Module 3: First-party Fraud
-
-This module contains the following exercises:
-
-. Identifying clients sharing sharing personally identifiable information (PII)
-. Identifying clusters of clients sharing PII using community detection algorithms (Weakly Connected Components)
-. Finding similar clients within the clusters based on shared identifiers using pairwise similarity algorithms
-(Node Similarity)
-. Calculating and assigning fraud score to clients in clusters using centrality algorithms (Degree Centrality)
-. Using assigned fraud scores to label clients as potential fraudsters
-
-== Exercise 1, Task 1: Identify clients sharing PII
-
-Identify pairs of clients sharing PII
-
-[source,cypher]
-----
-include::{sourcedir}/sharingPIIQuery.cypher[]
+MATCH (c1:Client)-[:HAS_EMAIL|:HAS_PHONE|:HAS_SSN]->(n) <-[:HAS_EMAIL|:HAS_PHONE|:HAS_SSN]-(c2:Client)
+WHERE id(c1) < id(c2)
+RETURN c1.id, c2.id, count(*) AS freq
+ORDER BY freq DESC;
 ----
 
 Number of unique clients sharing PII
 
 [source,cypher]
 ----
-include::{sourcedir}/sharingPIIUniqueQuery.cypher[]
+MATCH (c1:Client)-[:HAS_EMAIL|:HAS_PHONE|:HAS_SSN]->(n) <-[:HAS_EMAIL|:HAS_PHONE|:HAS_SSN]-(c2:Client)
+WHERE id(c1) <> id(c2)
+RETURN count(DISTINCT c1.id) AS freq;
 ----
 
-== Exercise 1, Task 2: Create a new relationship
+== Create a new relationship
 
-Create a new relationship to connect clients that share identifiers and add the number of
-shared identifiers as a property on that relationship
+Create a new relationship to connect clients that share identifiers and add the number of shared identifiers as a property on that relationship
 
 [source, cypher]
 ----
-include::{sourcedir}/sharedIdentifiers.cypher[]
+MATCH (c1:Client)-[:HAS_EMAIL|:HAS_PHONE|:HAS_SSN] ->(n)<- [:HAS_EMAIL|:HAS_PHONE|:HAS_SSN]-(c2:Client)
+WHERE id(c1) < id(c2)
+WITH c1, c2, count(*) as cnt
+MERGE (c1) - [:SHARED_IDENTIFIERS {count: cnt}] -> (c2);
 ----
 
 Visualize the new relationship created above.
 
 [source,cypher]
 ----
-include::{sourcedir}/visualizeSharedIdentifiers.cypher[]
+MATCH p = (:Client) - [s:SHARED_IDENTIFIERS] -> (:Client) WHERE s.count >= 2 RETURN p limit 25;
 ----
 
-== End of Exercise 1
+== Graph Algorithms
+Graph algorithms are used to compute metrics for graphs, nodes, or relationships.
 
-In this exercise we accomplished the following tasks:
+They can provide insights on relevant entities in the graph (centralities, ranking), or inherent structures like communities (community-detection, graph-partitioning, clustering).
 
-. Identified all pairs of clients sharing PII and calculated the number of such clients
-. Created a new relationship to connect pairs of clients sharing PII
+The Neo4j Graph Data Science (GDS) library contains many graph algorithms. The algorithms are divided into categories which represent different problem classes. For more information, please click here: https://neo4j.com/docs/graph-data-science/current/algorithms/[Algorithms^]
 
-== Exercise 2: Identify Clusters of Clients Sharing PII
-Identifying clusters of clients sharing PII is accomplished by running one of the community detection algorithms
-implemented in our GDS library.
+== Fraud detection workflow in Neo4j GDS
 
-We use Weakly Connected Components to find groups of connected nodes, where all nodes
-in the same set form a connected component. WCC is often used early in an analysis to understand the structure of a graph.
+We will construct a workflow with graph algorithms to detect fraud rings, score clients based on the number of common connections and rank them to select the top few suspicious clients and label them as fraudsters.
 
-More informaton here: https://neo4j.com/docs/graph-data-science/current/algorithms/wcc/[WCC documentation^]
+1. Identify clusters of clients sharing PII using a community detection algorithm (Weakly Connected Components)
+2. Find similar clients within the clusters using pairwise similarity algorithms
+(Node Similarity)
+3. Calculate and assign fraud score to clients using centrality algorithms (Degree Centrality) and
+4. Use computed fraud scores to label clients as potential fraudsters
 
-In this exercise, you will also learn how to reshape your graph for WCC, use graph catalog functions to load your graphs
-into memory and execute graph algorithms
+== Graph Projection
+A central concept in the GDS library is the management of in-memory graphs. Graph algorithms run on a graph data model which is a projection of the Neo4j property graph data model. For more information, please click here: https://neo4j.com/docs/graph-data-science/current/management-ops/[Graph Management^]
 
-== Exercise 2, Task 0: Reshaping and loading graphs
-
-The first step is think about the shape of our input graph before executing any algorithm. After that, make sure to reshape the
-graph to satisfy the requirements for an algorithm so that we get meaningful results in the end.
-
-In this exercise, we are planning to use a community detection algorithm to find communities/clusters of clients.
-
-Community detection algorithms expect
-monopartite graphs (nodes of a single type and relationships between nodes) as inputs. Hence, we have to project a graph into
-memory that contains only client nodes and relationships that connect those nodes.
-
-More information on graph projections and graph catalog: https://neo4j.com/docs/graph-data-science/current/management-ops/graph-catalog-ops/#graph-catalog-ops[Graph Catalog^]
-
-== Exercise 2, Task 1: Memory Estimation
-It is a good practice to run memory estimates before creating your graph to make sure you have enough memory to
-create an in-memory graph.
+A projected graph can be stored in the catalog under a user-defined name. Using that name, the graph can be referred to by any algorithm in the library.
 
 [source,cypher]
 ----
-include::{sourcedir}/memoryEstimation.cypher[]
+CALL gds.graph.project('wcc',
+    {
+        Client: {
+            label: 'Client'
+        }
+    },
+    {
+        SHARED_IDENTIFIERS:{
+            type: 'SHARED_IDENTIFIERS',
+            orientation: 'UNDIRECTED',
+            properties: {
+                count: {
+                    property: 'count'
+                }
+            }
+        }
+    }
+) YIELD graphName,nodeCount,relationshipCount,createMillis;
 ----
-More about memory estimation for graphs: https://neo4j.com/docs/graph-data-science/current/common-usage/memory-estimation/#estimate-procedure-graph[Memory Estimation for Graphs^]
 
-Another best practice is to list the graphs that are already loaded into memory. This is a good time to
-remove any unused graphs from the graph catalog.
+== Memory Estimation and Graph Projection
+
+It is a good practice to run memory estimates before creating your graph to make sure you have enough memory to create an in-memory graph. For more information, click here: https://neo4j.com/docs/graph-data-science/current/common-usage/memory-estimation/[Memory Estimation^]
+
+Named graphs can be created using either a Native projection or a Cypher projection. Native projections provide the best performance by reading from the Neo4j store files. Using Cypher projections is a more flexible and expressive approach with diminished focus on performance compared to the native projections. For more information, click here: https://neo4j.com/docs/graph-data-science/current/management-ops/graph-catalog-ops/[Native and Cypher Projection^]
+
+== 1. Identify groups of clients sharing PII (Fraud rings)
+Run Weakly connected components to find clusters of clients sharing PII.
+
+Weakly Connected Components is used to find groups of connected nodes, where all nodes
+in the same set form a connected component. WCC is often used early in an analysis understand the structure of a graph. More informaton here: https://neo4j.com/docs/graph-data-science/current/algorithms/wcc/[WCC documentation^]
 
 [source,cypher]
 ----
-CALL gds.graph.list();
+CALL gds.wcc.stream('wcc',
+    {
+        nodeLabels: ['Client'],
+        relationshipTypes: ['SHARED_IDENTIFIERS'],
+        consecutiveIds: true
+    }
+)
+YIELD nodeId, componentId
+RETURN gds.util.asNode(nodeId).id AS clientId, componentId
+ORDER BY componentId LIMIT 20
 ----
 
-To remove a named graph from the graph catalog,
+GDS algorithms support four common execution modes: *stream*, *mutate*, *write* and *stats*. More informaton here: https://neo4j.com/docs/graph-data-science/2.0-preview/common-usage/running-algos/[Execution modes^]
 
-[source,cypher]
-----
-CALL gds.graph.drop('name-of-your-graph');
-----
-
-== Exercise 2, Task 2: Graph projection for WCC
-Let's load our monopartite graph into memory using native projection.
-We chose 'WCC' as our graph name in this tutorial for running WCC algorithm.
-
-
-[source,cypher]
-----
-include::{sourcedir}/loadWCCNamedGraph.cypher[]
-----
-
-Native Projection Syntax: https://neo4j.com/docs/graph-data-science/current/management-ops/native-projection/#native-projection[Native Projection^]
-
-== Exercise 2, Task 3: Pre-execution checks
-Estimate memory before running your algorithm.
-
-[source,cypher]
-----
-CALL gds.wcc.stream.estimate('WCC');
-----
-
-Collecting stats is a good practice to see if the results make sense. For example, if there are no relationships
-in your graph, number of clusters is equal to number of nodes. If every node is connected to other nodes then you will have one
-big giant cluster and it is not meaningful to run WCC.
-
-[source,cypher]
-----
-CALL gds.wcc.stats('WCC');
-----
-
-More about memory estimation for algorithms: https://neo4j.com/docs/graph-data-science/current/common-usage/memory-estimation/#estimate-procedure-algo[Memory estimation for Algorithms^]
-
-== Exercise 2, Task 4: Execute WCC algorithm
-* Stream mode
-** Execute WCC and stream results back to the browser
-** Results are not written to the database
-
-[source,cypher]
-----
-include::{sourcedir}/wccStream.cypher[]
-----
-
-Modes of execution: https://neo4j.com/docs/graph-data-science/current/common-usage/running-algos/#running-algos[Running Algorithms^]
-
-== Exercise 2, Task 5: Write results to the database.
+== Write results to the database.
 * Writing results
 **  Write mode lets us write back the results to the database.
-** Instead of write mode, here we are going to use cypher to filter clusters based on the size (>1)
-and then set a property on Client nodes
+** Instead of write mode, here we are going to use cypher to filter clusters based on the size (>1) and then set a property on Client nodes*
 
 [source,cypher]
 ----
-include::{sourcedir}/wccWrite.cypher[]
+CALL gds.wcc.stream('wcc',
+    {
+        nodeLabels: ['Client'],
+        relationshipTypes: ['SHARED_IDENTIFIERS'],
+        consecutiveIds: true
+    }
+)
+YIELD componentId, nodeId
+WITH componentId AS cluster, gds.util.asNode(nodeId) AS client
+WITH cluster, collect(client.id) AS clients
+WITH cluster, clients, size(clients) AS clusterSize WHERE clusterSize > 1
+UNWIND clients AS client
+MATCH (c:Client) WHERE c.id = client
+SET c.firstPartyFraudGroup=cluster;
 ----
 
-== Exercise 2, Task 6: Collect and visualize clusters
-Visualize clusters of clients sharing information.
+*For large datasets, use periodic iterate from APOC library to set node properties (https://neo4j.com/labs/apoc/4.4/overview/apoc.periodic/apoc.periodic.iterate/[APOC^])
+
+== Collect and visualize clusters in Neo4j Browser
+Visualize clusters with greater than 9 client nodes.
 
 [source,cypher]
 ----
-include::{sourcedir}/wccDisplay.cypher[]
+MATCH (c:Client)
+WITH c.firstPartyFraudGroup AS fpGroupID, collect(c.id) AS fGroup
+WITH *, size(fGroup) AS groupSize WHERE groupSize >= 9
+WITH collect(fpGroupID) AS fraudRings
+MATCH p=(c:Client)-[:HAS_SSN|HAS_EMAIL|HAS_PHONE]->()
+WHERE c.firstPartyFraudGroup IN fraudRings
+RETURN p
 ----
 
 
-== Exercise 3: Finding similar clients within clusters
-Finding similar clients with a cluster is accomplished by running one of the paiwrise similarity algorithms
-implemented in our GDS library.
+== Pairwise similarity scores for additional context
+We have observed that some identifiers (Email/SSN/Phone Number) are connected to more than one client pointing to reuse of identifiers among clients.
 
-We use node similarity to find similar nodes based on the relationships to other nodes. Node similarity uses
-Jaccard metric which computes similarity score for a pair of nodes by looking at
-related nodes in the network that are common to both the nodes divided by the sum of all nodes related to both the nodes.
-More informaton here: https://neo4j.com/docs/graph-data-science/current/algorithms/node-similarity/#algorithms-node-similarity[Node Similarity documentation^]
+We hypothesize that identities that are connected to highly reused identifiers have higher potential to commit fraud.
+
+We could compute pairwise similarity scores using Jaccard metric and build additional relationships to connect clients based on shared identifiers and score these pairs based on Jaccard score.
+
+== 2. Compute pairwise similarity scores
+
+We use node similarity algorithm to find similar nodes based on the relationships to other nodes. Node similarity uses Jaccard metric (https://neo4j.com/docs/graph-data-science/current/algorithms/node-similarity/#algorithms-node-similarity[Node Similarity^])
 
 Node similarity algorithms work on bipartite graphs (two types of nodes and relationships between them).
 Here we project client nodes (one type) and three identifiers nodes
-(that are considered as second type) into memory. The clients who have these identifiers in common are similar to each other.
+(that are considered as second type) into memory.
 
-== Exercise 3, Task 1: Create a graph
-Here we use cypher projection to create an in-memory graph for running our similarity algorithm.
-We chose 'Similarity' as our graph name in this tutorial for running node similarity algorithm
-
+*Graph projection using cypher*
 [source,cypher]
 ----
-include::{sourcedir}/loadSimilarityNamedGraph.cypher[]
+MATCH(c:Client) WHERE c.firstPartyFraudGroup is not NULL
+WITH collect(c) as clients
+MATCH(n) WHERE n:Email OR n:Phone OR n:SSN
+WITH clients, collect(n) as identifiers
+WITH clients + identifiers as nodes
+
+MATCH(c:Client) -[:HAS_EMAIL|:HAS_PHONE|:HAS_SSN]->(id)
+WHERE c.firstPartyFraudGroup is not NULL
+WITH nodes, collect({source: c, target: id}) as relationships
+
+CALL gds.graph.project.cypher('similarity',
+    "UNWIND $nodes as n RETURN id(n) AS id,labels(n) AS labels",
+    "UNWIND $relationships as r RETURN id(r['source']) AS source, id(r['target']) AS target, 'HAS_IDENTIFIER' as type",
+    { parameters: {nodes: nodes, relationships: relationships}}
+)
+YIELD graphName, nodeCount, relationshipCount, createMillis
+RETURN graphName, nodeCount, relationshipCount, createMillis
 ----
 
-Cypher projection syntax: https://neo4j.com/docs/graph-data-science/current/management-ops/cypher-projection/#cypher-projection[Cypher projection^]
 
-== Exercise 3, Task 2: Streaming node similarity results
-
-[source,cypher]
-----
-include::{sourcedir}/similarityStream.cypher[]
-----
-
-== Exercise 3, Task 3: Writing similarity scores to the in-memory graph
+== Write similarity scores to in-memory graph (Mutate)
 We can mutate in-memory graph by writing outputs from the algorithm as node or relationship properties.
 
 [source,cypher]
 ----
-include::{sourcedir}/similarityMutate.cypher[]
+CALL gds.nodeSimilarity.mutate('similarity',
+    {
+        topK:15,
+        mutateProperty: 'jaccardScore',
+        mutateRelationshipType:'SIMILAR_TO'
+    }
+);
 ----
 
-Mutate mode is very useful when you execute more than one algorithm in a pipeline where outputs from the first algo
-is used as inputs to the second algorithm in the pipeline. Mutate mode is very fast compared to write mode and it helps
+Mutate mode is very useful when you execute more than one algorithm in a pipeline where outputs from the first algorithm
+is used as inputs to the second algorithm in the pipeline.
+
+Mutate mode is very fast compared to write mode and it helps
 in optimizing algorithm execution times.
 
-== Exercise 3, Task 4: Writing results from in-memory graph to the Database
+== Write results from in-memory graph to the Database
 In this step, we write back the property from in-memory graph to the database and use it for further analysis
 
 [source,cypher]
 ----
-include::{sourcedir}/similarityWrite.cypher[]
+CALL gds.graph.writeRelationship('similarity', 'SIMILAR_TO', 'jaccardScore');
 ----
+More information on Graph Catalog Operations:
+https://neo4j.com/docs/graph-data-science/current/management-ops/graph-catalog-ops/[Graph Catalog Ops^]
 
-== Exercise 3, Task 5: Visualize
-Let's see the newly created `SIMILAR_TO` relationships and how similar clients are based on similarity score
 
-[source,cypher]
-----
-include::{sourcedir}/similarityDisplay.cypher[]
-----
+== 3. Calculate First-party Fraud Score
+We compute first party fraud score using weighted degree centrality algorithm.
 
-== Exercise 4: First-party Fraud Score
 In this step, we compute and assign fraud score (`firstPartyFraudScore`) to clients in the clusters identified in previous steps
 based on `SIMILAR_TO` relationships weighted by `jaccardScore`
 
-We use one of the centrality algorithms (Degree Centrality) to add up `jaccardScore` on the incoming
-and outgoing relationships for a given node in a cluster and assign the sum as the corresponding `firstPartyFraudScore`.
-This score represents clients who are similar to many others in the cluster in terms of sharing identifiers.
+Weighted degree centrality algorithm add up similarity scores (`jaccardScore`) on the incoming
+`SIMILAR_TO` relationships for a given node in a cluster and assign the sum as the corresponding `firstPartyFraudScore`.
+This score represents clients who are similar to many others in the cluster in terms of sharing identifiers. Higher `firstPartyFraudScore` represents greater potential for committing fraud.
 
-Here the assumption is higher the `firstPartyFraudScore` greater the potential for committing fraud.
-
-== Exercise 4, Task 1: Calculating centrality score using Degree Centrality
-
-[source,cypher]
-----
-include::{sourcedir}/degreeStream.cypher[]
-----
-More on Degree Centrality: https://neo4j.com/docs/graph-data-science/current/algorithms/degree-centrality/#algorithms-degree-centrality[Degree Centrality^]
-
-== Exercise 4, Task 2: Writing the Degree Centrality to the database
-We write back centrality scores as `firstPartyFraudScore` to the database using algorithm write mode.
+== Write fraud scores to the database
+Write back centrality scores as `firstPartyFraudScore` to the database using write mode.
 
 [source,cypher]
 ----
-include::{sourcedir}/degreeWrite.cypher[]
+CALL gds.degree.write('similarity',
+    {
+        nodeLabels: ['Client'],
+        relationshipTypes: ['SIMILAR_TO'],
+        relationshipWeightProperty: 'jaccardScore',
+        writeProperty: 'firstPartyFraudScore'
+    }
+);
 ----
 
 Modes of execution: https://neo4j.com/docs/graph-data-science/current/common-usage/running-algos/#running-algos[Running Algorithms^]
 
 
-== Exercise 4, Task 3: Adding labels to Clients based on fraud score
+== 4. Attach fraudster labels
 
-Exploring the clients with first-party fraud score grater than some threshold. In this example, using 80th percentile as a threshold,
+We find clients with first-party fraud score greater than some threshold (X) and label those top X percentile clients as fraudsters. In this example, using 95th percentile as a threshold,
 we set a property `FirstPartyFraudster` on the Client node.
 
 [source,cypher]
 ----
-include::{sourcedir}/firstPartyFraudScoreWrite.cypher[]
+MATCH(c:Client)
+WHERE c.firstPartyFraudScore IS NOT NULL
+WITH percentileCont(c.firstPartyFraudScore, 0.95) AS firstPartyFraudThreshold
+
+MATCH(c:Client)
+WHERE c.firstPartyFraudScore > firstPartyFraudThreshold
+SET c:FirstPartyFraudster;
+
 ----
 
-== Exercise 5: Clean up  Graph Catalog
 
-[source,cypher]
-----
-include::{sourcedir}/removeNamedGraphs.cypher[]
-----
+== End of Module #1: First-party Fraud
 
-== End of Module 3
-
-In this module we were accomplished the following tasks:
+In this module:
 
 . Identified clusters of clients sharing PII
 . Computed pairwise similarity based on shared PII
 . Computed first-party fraud score and
-. Identified first-party fraudsters
+. Labeled some clients as first-party fraudsters
 
-== Module 4: Second-party Fraud
+== Module #2: Second-party Fraud/ Money Mules
 
-This module consists of the following exercises:
+According to FBI, criminals recruit money mules to help launder proceeds derived from online scams and frauds. Money mules add layers of distance between victims and fraudsters, which makes it harder for law enforcement to accurately trace money trails.
 
-. Identify and explore transactions between first-party fraudsters and other clients
-. Identify Second-party Fraud networks
+In this exercise, we detect money mules in the paysim dataset. Our hypothesis is that clients who transfer money to/from first party fraudsters are suspects for second party fraud.
 
-== Exercise 1, Task 1: Identifying Transactions Between First-party Fraudsters and Client
-First step is to find out Clients who weren't identified as first party fraudsters
+. Identify and explore transactions (money transfers) between first-party fraudsters and other clients
+. Detect second-party fraud networks
+
+== Transactions between first-party fraudsters and client
+The first step is to find out clients who weren't identified as first party fraudsters
 but they transact with first party fraudsters
 
 [source,cypher]
 ----
-include::{sourcedir}/firstPartyFraudstersTransactions.cypher[]
+MATCH p=(:Client:FirstPartyFraudster)-[]-(:Transaction)-[]-(c:Client)
+WHERE NOT c:FirstPartyFraudster
+RETURN p;
 ----
 
 Also, lets find out what types of transactions do these Clients perform with first party fraudsters
 
 [source,cypher]
 ----
-include::{sourcedir}/firstPartyFraudstersTransactionsType.cypher[]
+MATCH (:Client:FirstPartyFraudster)-[]-(txn:Transaction)-[]-(c:Client)
+WHERE NOT c:FirstPartyFraudster
+UNWIND labels(txn) AS transactionType
+RETURN transactionType, count(*) AS freq;
 ----
 
-== Exercise 1, Task 2: Create new relationships
+== Create new relationships
 Let's go ahead and create `TRANSFER_TO` relationships between clients with `firstPartyFraudster` tags and
-clients with no such tags but transact with fraudsters.
-Also, let's go ahead and add the total amount from all such
-transactions as a property on `TRANSFER_TO` relationships.
+other clients. Also add the total amount from all such transactions as a property on `TRANSFER_TO` relationships.
 
 Since the total amount transferred from a fraudster to a client and the total amount transferred in the reverse direction
 are not the same, we have to create relationships in two separate queries.
@@ -441,108 +434,148 @@ are not the same, we have to create relationships in two separate queries.
 
 [source,cypher]
 ----
-include::{sourcedir}/firstPartyFraudstersTransferTo.cypher[]
+MATCH (c1:FirstPartyFraudster)-[]->(t:Transaction)-[]->(c2:Client)
+WHERE NOT c2:FirstPartyFraudster
+WITH c1, c2, sum(t.amount) AS totalAmount
+SET c2:SecondPartyFraudSuspect
+CREATE (c1)-[:TRANSFER_TO {amount:totalAmount}]->(c2);
 ----
 
-* `TRANSFER_TO` relationship from a client to a fraudster
+* `TRANSFER_TO` relationship from a client to a fraudster.
 
 
 [source,cypher]
 ----
-include::{sourcedir}/firstPartyFraudstersTransferFrom.cypher[]
+MATCH (c1:FirstPartyFraudster)<-[]-(t:Transaction)<-[]-(c2:Client)
+WHERE NOT c2:FirstPartyFraudster
+WITH c1, c2, sum(t.amount) AS totalAmount
+SET c2:SecondPartyFraudSuspect
+CREATE (c1)<-[:TRANSFER_TO {amount:totalAmount}]-(c2);
 ----
 
-== Exercise 1, Task 3: Visualize relationships
+== Visualize relationships in Neo4j Browser
 Visualize newly created `TRANSFER_TO` relationships
 
 [source,cypher]
 ----
-include::{sourcedir}/secondPartyFraudDisplay.cypher[]
+MATCH p=(:Client:FirstPartyFraudster)-[:TRANSFER_TO]-(c:Client)
+WHERE NOT c:FirstPartyFraudster
+RETURN p;
 ----
 
-== Exercise 2: Identifying Second-party Fraud
+== Second-party Fraud
 
-Our objective is to find out clients who may have colluded with first party fraudsters and were not
+Our objective is to find out clients who may have supported the first party fraudsters and were not
 identified as potential first party fraudsters.
 
-Our hypothesis is that clients who perform transactions of type `Transfer` where they either send to or receive money from
-first party fraudsters are suspects for second party fraud.
+Our hypothesis is that clients who perform transactions of type `Transfer` where they either send or receive money from
+first party fraudsters are flagged as suspects for second party fraud.
 
 To identify such clients, make use of `TRANSFER_TO` relationships and use this recipe:
 
-. Use a community detection algorithm (WCC) to identify networks of clients who are conencted to
+. Use  WCC (community detection) to identify networks of clients who are connected to
 first party fraudsters
-. Use a centrality algorithm (Page Rank) to compute a score based on how influential these clients are
-when relationships take into account the amount of money transferred to/from fraudsters
-. Use pagerank score to assign `secondPartyFraudScore` (risk score) to these clients
+. Use PageRank (centrality) to score clients based on their influence in terms of the amount of money transferred to/from fraudsters
+. Assign risk score (`secondPartyFraudScore`) to these clients
 
-== Exercise 2, Task 1: Create an in-memory Graph
+== 1. Graph Projection and WCC
 Let's use native projection and create an in-memory graph with `Client` nodes and `TRANSFER_TO` relationships.
-Since we plan to use a community detection algorithm here, we should project a monopartite graph.
-
 [source,cypher]
 ----
-include::{sourcedir}/secondPartyFraudNamedGraph.cypher[]
+CALL gds.graph.project('SecondPartyFraudNetwork',
+    'Client',
+    'TRANSFER_TO',
+    {relationshipProperties:'amount'}
+);
 ----
 
-== Exercise 2, Task 2: Execute WCC to find clusters
 We will see if there are any clusters with more than one clients in them and if there are, then
 we should add a tag `secondPartyFraudGroup` to find them later using local queries.
 
-* Stream results
-
-[source,cypher]
-----
-include::{sourcedir}/secondPartyFraudWccStream.cypher[]
-----
-
 * Write results to the database
 
 [source,cypher]
 ----
-include::{sourcedir}/secondPartyFraudWccWrite.cypher[]
+CALL gds.wcc.stream('SecondPartyFraudNetwork')
+YIELD nodeId, componentId
+WITH gds.util.asNode(nodeId) AS client, componentId AS clusterId
+WITH clusterId, collect(client.id) AS cluster
+WITH clusterId, size(cluster) AS clusterSize, cluster
+WHERE clusterSize > 1
+UNWIND cluster AS client
+MATCH(c:Client {id:client})
+SET c.secondPartyFraudGroup=clusterId;
+
 ----
 
-== Exercise 2, Task 3: Identifying Second-party Fraudsters
-Let's go ahead and compute centrality score using Page Rank algorithm to find out who among
-the suspects have relatively higher pagerank scores. Please note that relationships are weighted by the total amount transferred to fraudsters.
+== 2. Second-party Fraudster PageRank scores
+Use pagerank to find out who among the suspects have relatively higher fraud scores. Please note that relationships are weighted by the total amount transferred to fraudsters.
 
-* Stream results
-
-[source,cypher]
-----
-include::{sourcedir}/secondPartyFraudPageRankStream.cypher[]
-----
 * Write results to the database
-** Attach a `secondPartyFraudScore` tag to the clients with page rank scores as values
+** Attach a `secondPartyFraudScore` tag to the clients with PageRank scores as values
 
 [source,cypher]
 ----
-include::{sourcedir}/secondPartyFraudPageRankWrite.cypher[]
+CALL gds.pageRank.stream('SecondPartyFraudNetwork',
+    {relationshipWeightProperty:'amount'}
+)YIELD nodeId, score
+WITH gds.util.asNode(nodeId) AS client, score AS pageRankScore
+
+WHERE client.secondPartyFraudGroup IS NOT NULL
+        AND pageRankScore > 0 AND NOT client:FirstPartyFraudster
+
+MATCH(c:Client {id:client.id})
+SET c:SecondPartyFraud
+SET c.secondPartyFraudScore = pageRankScore;
+
 ----
 
-More information here: https://neo4j.com/docs/graph-data-science/current/algorithms/page-rank/#algorithms-pagerank[Page Rank^]
+More information here: https://neo4j.com/docs/graph-data-science/current/algorithms/page-rank/#algorithms-pagerank[PageRank^]
 
-== Exercise 2, Task 4: Visualize second party fraud networks
+== Visualize second party fraud networks
 
 [source,cypher]
 ----
-include::{sourcedir}/secondPartyFraudDisplay.cypher[]
+MATCH p=(:Client:FirstPartyFraudster)-[:TRANSFER_TO]-(c:Client)
+WHERE NOT c:FirstPartyFraudster
+RETURN p;
+
 ----
 
-== Exercise 3: Clean up after yourself!
+== Clean up graph catalog
 
 It is a good practice to removing all graphs from the Graph Catalog once you are done with executing algorithms and
 writing results back to the database
 
 [source,cypher]
 ----
-include::{sourcedir}/removeNamedGraphs.cypher[]
+CALL gds.graph.list()
+YIELD graphName AS namedGraph
+WITH namedGraph
+CALL gds.graph.drop(namedGraph)
+YIELD graphName
+RETURN graphName;
 ----
 
-== End of Module 4
+== End of Module #2
 
-In this module we accomplish the following task:
+In this module we accomplished the following tasks:
 
 . Identified clusters of clients and first-party fraudsters transferring money between them
-. Calculated a second-party fraud score and identified second-party fraudsters
+. Calculated second-party fraud score and identified second-party fraudsters
+
+
+
+ifdef::backend-html5[]
+
+include::scripts-end.txt[]
+
+++++
+<script>
+$( document ).ready(function() {
+  Intercom('trackEvent','training-introv2-view-part4');
+});
+</script>
+++++
+
+endif::backend-html5[]
