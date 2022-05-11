@@ -10,4 +10,4 @@ MATCH(n)
 -[:HAS_EMAIL|:HAS_PHONE|:HAS_SSN]->(ids)
 WHERE exists(c.firstPartyFraudGroup)
 RETURN id(c) AS source,id(ids) AS target')
-YIELD graphName,nodeCount,relationshipCount,createMillis;
+YIELD graphName,nodeCount,relationshipCount,projectMillis;

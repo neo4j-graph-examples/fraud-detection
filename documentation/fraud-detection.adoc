@@ -197,7 +197,7 @@ CALL gds.graph.project('wcc',
             }
         }
     }
-) YIELD graphName,nodeCount,relationshipCount,createMillis;
+) YIELD graphName,nodeCount,relationshipCount,projectMillis;
 ----
 
 == Memory Estimation and Graph Projection
@@ -301,8 +301,8 @@ CALL gds.graph.project.cypher('similarity',
     "UNWIND $relationships as r RETURN id(r['source']) AS source, id(r['target']) AS target, 'HAS_IDENTIFIER' as type",
     { parameters: {nodes: nodes, relationships: relationships}}
 )
-YIELD graphName, nodeCount, relationshipCount, createMillis
-RETURN graphName, nodeCount, relationshipCount, createMillis
+YIELD graphName, nodeCount, relationshipCount, projectMillis
+RETURN graphName, nodeCount, relationshipCount, projectMillis
 ----
 
 

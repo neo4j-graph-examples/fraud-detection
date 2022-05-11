@@ -428,7 +428,7 @@ MERGE (c1) - [:SHARED_IDENTIFIERS {count: cnt}] -&gt; (c2);<!--/code--></pre>
             }
         }
     }
-) YIELD graphName,nodeCount,relationshipCount,createMillis;<!--/code--></pre>
+) YIELD graphName,nodeCount,relationshipCount,projectMillis;<!--/code--></pre>
 </div>
 </div>
 	</div>
@@ -616,8 +616,8 @@ CALL gds.graph.project.cypher('similarity',
     "UNWIND $relationships as r RETURN id(r['source']) AS source, id(r['target']) AS target, 'HAS_IDENTIFIER' as type",
     { parameters: {nodes: nodes, relationships: relationships}}
 )
-YIELD graphName, nodeCount, relationshipCount, createMillis
-RETURN graphName, nodeCount, relationshipCount, createMillis<!--/code--></pre>
+YIELD graphName, nodeCount, relationshipCount, projectMillis
+RETURN graphName, nodeCount, relationshipCount, projectMillis<!--/code--></pre>
 </div>
 </div>
 	</div>

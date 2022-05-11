@@ -9,4 +9,4 @@ CALL gds.graph.create('WCC', 'Client',
             }
         }
 	}
-) YIELD graphName,nodeCount,relationshipCount,createMillis;
+) YIELD graphName,nodeCount,relationshipCount,projectMillis;
