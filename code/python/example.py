@@ -1,10 +1,10 @@
-# pip3 install neo4j-driver
+# pip3 install neo4j
 # python3 example.py
 
 from neo4j import GraphDatabase, basic_auth
 
 driver = GraphDatabase.driver(
-  "bolt://<HOST>:<BOLTPORT>",
+  "neo4j://<HOST>:<BOLTPORT>",
   auth=basic_auth("<USERNAME>", "<PASSWORD>"))
 
 cypher_query = '''
