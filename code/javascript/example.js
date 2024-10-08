@@ -1,9 +1,9 @@
 // npm install --save neo4j-driver
 // node example.js
 const neo4j = require('neo4j-driver');
-const driver = neo4j.driver('bolt://<HOST>:<BOLTPORT>',
+const driver = neo4j.driver('neo4j://<HOST>:<BOLTPORT>',
                   neo4j.auth.basic('<USERNAME>', '<PASSWORD>'), 
-                  {/* encrypted: 'ENCRYPTION_OFF' */});
+                  {});
 
 const query =
   `
